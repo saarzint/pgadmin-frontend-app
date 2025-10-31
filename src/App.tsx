@@ -1,27 +1,26 @@
-import { useState } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
-import { Dashboard } from './pages';
+import { Dashboard, AIChat } from './pages';
 import { Sidebar } from './components';
 
 function App() {
-  const [activePage, setActivePage] = useState('dashboard');
+  const location = useLocation();
 
-  const handleNavigation = (path: string) => {
-    // Extract page name from path
-    const page = path.replace('/', '');
-    setActivePage(page);
-    console.log('Navigating to:', page);
-    // TODO: Implement routing logic here
-  };
+  // Extract the active page from the current path
+  const activePage = location.pathname.replace('/', '') || 'dashboard';
 
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
-      <Sidebar activeItem={activePage} onNavigate={handleNavigation} />
+      <Sidebar activeItem={activePage} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        <Dashboard />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/ai-chat" element={<AIChat />} />
+        </Routes>
       </main>
     </div>
   );

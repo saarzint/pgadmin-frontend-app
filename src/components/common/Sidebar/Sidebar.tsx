@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   BookOpen,
   Compass,
@@ -8,6 +9,7 @@ import {
   Plane,
   ChevronLeft,
   ChevronRight,
+  MessageSquare,
 } from 'lucide-react';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
@@ -23,10 +25,9 @@ interface MenuItem {
 
 interface SidebarProps {
   activeItem?: string;
-  onNavigate?: (path: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const menuItems: MenuItem[] = [
     {
@@ -71,19 +72,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
       path: '/visa',
       isActive: activeItem === 'visa',
     },
+    {
+      id: 'ai-chat',
+      label: 'AI Chat',
+      icon: <MessageSquare size={20} />,
+      path: '/ai-chat',
+      isActive: activeItem === 'ai-chat',
+    },
   ];
-
-  const handleItemClick = (path: string) => {
-    if (onNavigate) {
-      onNavigate(path);
-    }
-  };
 
   return (
     <aside
-      className={`h-screen bg-white flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.15)] relative z-10 transition-all duration-300 ${
-        isCollapsed ? 'w-20' : 'w-80'
-      }`}
+      className={`h-screen bg-white flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.15)] relative z-10 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-80'
+        }`}
     >
       {/* Header */}
       <div className={`p-6 ${isCollapsed ? 'flex items-center justify-center' : ''}`}>
@@ -116,23 +117,22 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
         <ul className="space-y-2">
           {menuItems.map((item) => (
             <li key={item.id}>
-              <button
-                onClick={() => handleItemClick(item.path)}
+              <Link
+                to={item.path}
                 className={`
                   w-full flex items-center rounded-lg
                   transition-all duration-200
                   ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3'}
-                  ${
-                    item.isActive
-                      ? 'bg-primary-lightest text-primary-dark font-semibold'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ${item.isActive
+                    ? 'bg-primary-lightest text-primary-dark font-semibold'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }
                 `}
                 title={isCollapsed ? item.label : undefined}
               >
                 <span className="flex-shrink-0">{item.icon}</span>
                 {!isCollapsed && <span className="text-left">{item.label}</span>}
-              </button>
+              </Link>
             </li>
           ))}
         </ul>
@@ -141,7 +141,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
       {/* AI Counselor Section */}
       <div className={`p-4 ${isCollapsed ? 'flex justify-center' : ''}`}>
         {isCollapsed ? (
-          <button
+          <Link
+            to="/ai-chat"
             className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-[1.05] transition-all duration-200"
             style={{
               background: 'linear-gradient(90deg, #EF6B5C 0%, #E8506A 100%)',
@@ -149,7 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
             title="Ask AI Assistant"
           >
             <img src={aiAssistantIcon} alt="AI Assistant" className="w-5 h-5" />
-          </button>
+          </Link>
         ) : (
           <>
             {/* AI Counselor Header */}
@@ -166,7 +167,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
             </p>
 
             {/* CTA Button */}
-            <button
+            <Link
+              to="/ai-chat"
               className="w-full text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02]"
               style={{
                 background: 'linear-gradient(90deg, #EF6B5C 0%, #E8506A 100%)',
@@ -174,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
             >
               <img src={aiAssistantIcon} alt="AI Assistant" className="w-5 h-5" />
               Ask AI Assistant
-            </button>
+            </Link>
           </>
         )}
       </div>
