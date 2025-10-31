@@ -6,10 +6,13 @@
   --color-primary-dark: #030287;
   --color-primary: #5B6BFF;
   --color-primary-light: #A9C7FF;
+  --color-primary-lightest: #DFEAFFE5;
+  --color-primary-white: #FFFFFF;
 
   /* Secondary Colors */
   --color-secondary: #F7B500;
   --color-secondary-light: #8DF8E7;
+  --color-secondary-yellow: #FFEFA9;
 
   /* Neutral Colors */
   --color-neutral-gray: #A0A0A0;
@@ -20,4 +23,5 @@
   /* Gradient Colors */
   --color-gradient-blue: #A9C7FF;
   --color-gradient-cyan: #8DF8E7;
+  --color-gradient-cyan-light: #A9FFEA66;
 }

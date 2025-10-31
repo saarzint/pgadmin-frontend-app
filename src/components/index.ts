@@ -1,5 +1,5 @@
 // Dashboard Components
-export { Welcome, MetricsSummary } from './Dashboard';
+export { Welcome, MetricsSummary, Applications, Recommendations, Deadlines, Scholarships } from './Dashboard';
 
 // Common Components
 export { Sidebar } from './common';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   BookOpen,
   Compass,
@@ -6,8 +6,12 @@ import {
   FileText,
   DollarSign,
   Plane,
-  Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+import logo from '../../../assets/icons/logo.svg';
+import pgIcon from '../../../assets/icons/pg.svg';
+import aiAssistantIcon from '../../../assets/icons/ai-assistant.svg';
 
 interface MenuItem {
   id: string;
@@ -23,6 +27,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const menuItems: MenuItem[] = [
     {
       id: 'dashboard',
@@ -75,15 +80,35 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
   };
 
   return (
-    <aside className="h-screen w-80 bg-primary-darkest text-white flex flex-col">
+    <aside
+      className={`h-screen bg-white flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.15)] relative z-10 transition-all duration-300 ${
+        isCollapsed ? 'w-20' : 'w-80'
+      }`}
+    >
       {/* Header */}
-      <div className="p-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-            <span className="text-primary-darkest font-bold text-xl">P</span>
-          </div>
-          <h1 className="text-2xl font-bold">PGadmit</h1>
+      <div className={`p-6 ${isCollapsed ? 'flex items-center justify-center' : ''}`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+          {isCollapsed ? (
+            <img src={pgIcon} alt="PG Logo" className="w-10 h-10" />
+          ) : (
+            <img src={logo} alt="PGadmit Logo" className="h-10" />
+          )}
         </div>
+      </div>
+
+      {/* Toggle Button */}
+      <div className={`px-4 ${isCollapsed ? 'flex justify-center' : 'flex justify-end'}`}>
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? (
+            <ChevronRight size={20} className="text-gray-600" />
+          ) : (
+            <ChevronLeft size={20} className="text-gray-600" />
+          )}
+        </button>
       </div>
 
       {/* Navigation Menu */}
@@ -94,17 +119,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
               <button
                 onClick={() => handleItemClick(item.path)}
                 className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                  w-full flex items-center rounded-lg
                   transition-all duration-200
+                  ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3'}
                   ${
                     item.isActive
-                      ? 'bg-neutral-gray bg-opacity-40 text-white font-medium'
-                      : 'text-gray-300 hover:bg-neutral-gray hover:bg-opacity-20 hover:text-white'
+                      ? 'bg-primary-lightest text-primary-dark font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }
                 `}
+                title={isCollapsed ? item.label : undefined}
               >
                 <span className="flex-shrink-0">{item.icon}</span>
-                <span className="text-left">{item.label}</span>
+                {!isCollapsed && <span className="text-left">{item.label}</span>}
               </button>
             </li>
           ))}
@@ -112,32 +139,44 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard', onNavigate 
       </nav>
 
       {/* AI Counselor Section */}
-      <div className="p-4">
-        <div className="bg-opacity-50 rounded-xl p-4">
-          {/* AI Counselor Header */}
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-              <Sparkles size={18} className="text-primary-darkest" />
-            </div>
-            <h3 className="text-lg font-bold">AI Counselor</h3>
-          </div>
-
-          {/* Description */}
-          <p className="text-sm text-gray-300 mb-4">
-            Your personal study abroad guide
-          </p>
-
-          {/* CTA Button */}
+      <div className={`p-4 ${isCollapsed ? 'flex justify-center' : ''}`}>
+        {isCollapsed ? (
           <button
-            className="w-full text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+            className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-[1.05] transition-all duration-200"
             style={{
               background: 'linear-gradient(90deg, #EF6B5C 0%, #E8506A 100%)',
             }}
+            title="Ask AI Assistant"
           >
-            <Sparkles size={18} />
-            Ask AI Assistant
+            <img src={aiAssistantIcon} alt="AI Assistant" className="w-5 h-5" />
           </button>
-        </div>
+        ) : (
+          <>
+            {/* AI Counselor Header */}
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                <img src={aiAssistantIcon} alt="AI Assistant" className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-bold text-primary-darkest">AI Counselor</h3>
+            </div>
+
+            {/* Description */}
+            <p className="text-sm text-gray-600 mb-4">
+              Your personal study abroad guide
+            </p>
+
+            {/* CTA Button */}
+            <button
+              className="w-full text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+              style={{
+                background: 'linear-gradient(90deg, #EF6B5C 0%, #E8506A 100%)',
+              }}
+            >
+              <img src={aiAssistantIcon} alt="AI Assistant" className="w-5 h-5" />
+              Ask AI Assistant
+            </button>
+          </>
+        )}
       </div>
     </aside>
   );
