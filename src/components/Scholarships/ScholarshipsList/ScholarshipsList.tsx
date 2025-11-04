@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import ScholarshipCard, { ScholarshipData } from '../ScholarshipCard/ScholarshipCard';
+import FilterModal, { FilterValues } from '../FilterModal/FilterModal';
 
 interface ScholarshipsListProps {
   scholarships?: ScholarshipData[];
@@ -57,11 +58,13 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
   const [activeTab, setActiveTab] = useState<string>('discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterValues | null>(null);
 
   const tabs = [
     { id: 'discover', label: 'Discover Scholarships' },
-    { id: 'applications', label: 'My Applications' },
-    { id: 'planning', label: 'Financial Planning' },
+    { id: 'saved', label: 'My Saved' },
+    { id: 'loan', label: 'Loan Options' },
   ];
 
   const handleToggleFavorite = (id: string) => {
@@ -76,20 +79,42 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
     });
   };
 
-  const filteredScholarships = scholarships.filter((scholarship) =>
-    scholarship.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    scholarship.university.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleApplyFilters = (newFilters: FilterValues) => {
+    setFilters(newFilters);
+  };
+
+  const filteredScholarships = scholarships.filter((scholarship) => {
+    // Search filter
+    const matchesSearch =
+      scholarship.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      scholarship.university.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!filters) return matchesSearch;
+
+    // Scholarship type filter
+    const matchesType =
+      filters.scholarshipTypes.length === 0 ||
+      scholarship.tags.some((tag) => filters.scholarshipTypes.includes(tag));
+
+    // Only open scholarships filter
+    const matchesAvailability = !filters.onlyOpenScholarships || !scholarship.deadlinePassed;
+
+    // Match percentage filter
+    const matchesCompatibility = scholarship.matchPercentage >= filters.compatibilityMatch;
+
+    return matchesSearch && matchesType && matchesAvailability && matchesCompatibility;
+  });
 
   return (
     <div className="w-full">
       {/* Tabs - iOS Style */}
-      <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
+      <div className="flex gap-2 mb-6 p-1" style={{ backgroundColor: '#F5F5F5', borderRadius: '8px' }}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 px-4 py-1.5 font-medium rounded-md transition-all ${
+            style={{ borderRadius: '8px' }}
+            className={`flex-1 px-4 py-1.5 font-medium transition-all ${
               activeTab === tab.id
                 ? 'bg-white text-primary-darkest shadow-sm'
                 : 'text-neutral-gray hover:text-primary-dark'
@@ -101,8 +126,8 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="flex gap-4 mb-6 px-12">
-        <div className="flex-1 relative">
+      <div className="flex justify-between items-center gap-4 mb-6 px-12">
+        <div className="relative max-w-2xl w-full">
           <Search
             size={20}
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-gray"
@@ -112,17 +137,31 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
             placeholder="Search by name or provider..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-          <SlidersHorizontal size={20} />
-          <span className="font-medium">Filter</span>
-        </button>
-        <button className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-          <span className="font-medium">Sort ▼</span>
-        </button>
+        <div className="flex gap-3">
+          <button className="flex items-center gap-2 px-4 py-3 rounded-lg transition-colors" style={{ backgroundColor: '#F4F4F5', border: 'none', outline: 'none' }}>
+            <span className="font-medium">Sort</span>
+            <ChevronDown size={20} />
+          </button>
+          <button
+            onClick={() => setIsFilterOpen(true)}
+            className="flex items-center gap-2 px-4 py-3 rounded-lg transition-colors"
+            style={{ backgroundColor: '#F4F4F5', border: 'none', outline: 'none' }}
+          >
+            <SlidersHorizontal size={20} />
+            <span className="font-medium">Filter</span>
+          </button>
+        </div>
       </div>
+
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApplyFilters={handleApplyFilters}
+      />
 
       {/* Scholarships Count */}
       <div className="mb-4 px-12">
