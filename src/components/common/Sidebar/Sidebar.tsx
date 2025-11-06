@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageSquare,
+  Building2,
 } from 'lucide-react';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
@@ -50,6 +51,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       icon: <Search size={18} />,
       path: '/research',
       isActive: activeItem === 'research',
+    },
+    {
+      id: 'universities',
+      label: 'Universities & Programs',
+      icon: <Building2 size={18} />,
+      path: '/universities',
+      isActive: activeItem === 'universities',
     },
     {
       id: 'applications',
