@@ -73,25 +73,25 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
     <div className="fixed inset-0 flex justify-end z-50 pointer-events-none">
       <div className="bg-white w-full max-w-md h-full overflow-y-auto shadow-2xl pointer-events-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-primary-darkest">Filter</h2>
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-primary-darkest">Filter</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-4 space-y-6">
+        <div className="px-4 py-3 space-y-4">
           {/* Scholarship Type */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-5 h-5 bg-gray-100 rounded"></div>
-              <h3 className="text-base font-bold text-primary-darkest">Scholarship Type</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-4 h-4 bg-gray-100 rounded"></div>
+              <h3 className="text-sm font-bold text-primary-darkest">Scholarship Type</h3>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {['Merit-based', 'Need-based', 'Research-based', 'Diversity', 'Leadership'].map(
                 (type) => (
                   <label key={type} className="flex items-center justify-between cursor-pointer">
@@ -111,9 +111,9 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
 
           {/* Award Amount */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-5 h-5 bg-gray-100 rounded"></div>
-              <h3 className="text-base font-bold text-primary-darkest">Award Amount</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-4 h-4 bg-gray-100 rounded"></div>
+              <h3 className="text-sm font-bold text-primary-darkest">Award Amount</h3>
             </div>
             <div className="flex justify-between text-sm text-gray-700 mb-2">
               <span>From ${awardAmountRange[0].toLocaleString()}</span>
@@ -134,9 +134,9 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
 
           {/* Availability */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-5 h-5 bg-gray-100 rounded"></div>
-              <h3 className="text-base font-bold text-primary-darkest">Availability</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-4 h-4 bg-gray-100 rounded"></div>
+              <h3 className="text-sm font-bold text-primary-darkest">Availability</h3>
             </div>
             <label className="flex items-center justify-between cursor-pointer">
               <span className="text-sm text-gray-700">Only show currently open scholarships</span>
@@ -152,9 +152,9 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
 
           {/* Acceptance Rate */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-5 h-5 bg-gray-100 rounded"></div>
-              <h3 className="text-base font-bold text-primary-darkest">Acceptance Rate</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-4 h-4 bg-gray-100 rounded"></div>
+              <h3 className="text-sm font-bold text-primary-darkest">Acceptance Rate</h3>
             </div>
             <div className="flex justify-between text-sm text-gray-700 mb-2">
               <span>0%</span>
@@ -174,9 +174,9 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
 
           {/* Compatibility Match */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-5 h-5 bg-gray-100 rounded"></div>
-              <h3 className="text-base font-bold text-primary-darkest">Compatibility Match</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-4 h-4 bg-gray-100 rounded"></div>
+              <h3 className="text-sm font-bold text-primary-darkest">Compatibility Match</h3>
             </div>
             <div className="flex justify-between text-sm text-gray-700 mb-2">
               <span>0%</span>
@@ -196,11 +196,11 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
 
           {/* Degree Level */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-5 h-5 bg-gray-100 rounded"></div>
-              <h3 className="text-base font-bold text-primary-darkest">Degree Level</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-4 h-4 bg-gray-100 rounded"></div>
+              <h3 className="text-sm font-bold text-primary-darkest">Degree Level</h3>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {['Bachelor', 'Master', 'Second Master'].map((level) => (
                 <label key={level} className="flex items-center justify-between cursor-pointer">
                   <span className="text-sm text-gray-700">{level}</span>
@@ -218,11 +218,11 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
 
           {/* Countries */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-5 h-5 bg-gray-100 rounded"></div>
-              <h3 className="text-base font-bold text-primary-darkest">Countries</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-4 h-4 bg-gray-100 rounded"></div>
+              <h3 className="text-sm font-bold text-primary-darkest">Countries</h3>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {['USA', 'UK'].map((country) => (
                 <label key={country} className="flex items-center justify-between cursor-pointer">
                   <span className="text-sm text-gray-700">{country}</span>
@@ -240,16 +240,16 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 space-y-3">
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 space-y-2">
           <button
             onClick={handleApply}
-            className="w-full bg-primary-darkest text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors"
+            className="w-full bg-primary-darkest text-white font-semibold py-2 px-3 rounded-lg hover:bg-primary-dark transition-colors text-sm"
           >
             Apply Filters
           </button>
           <button
             onClick={handleReset}
-            className="w-full border border-gray-300 text-primary-darkest font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors"
+            className="w-full border border-gray-300 text-primary-darkest font-semibold py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors text-sm"
           >
             Reset
           </button>

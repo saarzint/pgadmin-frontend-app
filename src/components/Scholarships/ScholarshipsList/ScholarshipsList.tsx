@@ -108,13 +108,13 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
   return (
     <div className="w-full">
       {/* Tabs - iOS Style */}
-      <div className="flex gap-2 mb-6 p-1" style={{ backgroundColor: '#F5F5F5', borderRadius: '8px' }}>
+      <div className="flex gap-1.5 mb-4 p-1" style={{ backgroundColor: '#F5F5F5', borderRadius: '8px' }}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{ borderRadius: '8px' }}
-            className={`flex-1 px-4 py-1.5 font-medium transition-all ${
+            className={`flex-1 px-3 py-1 font-medium text-sm transition-all ${
               activeTab === tab.id
                 ? 'bg-white text-primary-darkest shadow-sm'
                 : 'text-neutral-gray hover:text-primary-dark'
@@ -126,31 +126,31 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="flex justify-between items-center gap-4 mb-6 px-12">
+      <div className="flex justify-between items-center gap-3 mb-4 px-8">
         <div className="relative max-w-2xl w-full">
           <Search
-            size={20}
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-gray"
+            size={18}
+            className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-neutral-gray"
           />
           <input
             type="text"
             placeholder="Search by name or provider..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-3 rounded-lg transition-colors" style={{ backgroundColor: '#F4F4F5', border: 'none', outline: 'none' }}>
+        <div className="flex gap-2">
+          <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors text-sm" style={{ backgroundColor: '#F4F4F5', border: 'none', outline: 'none' }}>
             <span className="font-medium">Sort</span>
-            <ChevronDown size={20} />
+            <ChevronDown size={18} />
           </button>
           <button
             onClick={() => setIsFilterOpen(true)}
-            className="flex items-center gap-2 px-4 py-3 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors text-sm"
             style={{ backgroundColor: '#F4F4F5', border: 'none', outline: 'none' }}
           >
-            <SlidersHorizontal size={20} />
+            <SlidersHorizontal size={18} />
             <span className="font-medium">Filter</span>
           </button>
         </div>
@@ -164,15 +164,15 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
       />
 
       {/* Scholarships Count */}
-      <div className="mb-4 px-12">
-        <p className="text-lg font-semibold text-primary-darkest">
+      <div className="mb-3 px-8">
+        <p className="text-base font-semibold text-primary-darkest">
           {filteredScholarships.length} Scholarships Found
         </p>
-        <p className="text-sm text-neutral-gray">Sorted by AI match score</p>
+        <p className="text-xs text-neutral-gray">Sorted by AI match score</p>
       </div>
 
       {/* Scholarships Grid */}
-      <div className="space-y-6 px-12">
+      <div className="space-y-4 px-8">
         {filteredScholarships.length > 0 ? (
           filteredScholarships.map((scholarship) => (
             <ScholarshipCard
@@ -185,9 +185,9 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
             />
           ))
         ) : (
-          <div className="text-center py-12">
-            <p className="text-neutral-gray font-medium">No scholarships found</p>
-            <p className="text-sm text-neutral-gray mt-2">
+          <div className="text-center py-8">
+            <p className="text-neutral-gray font-medium text-sm">No scholarships found</p>
+            <p className="text-xs text-neutral-gray mt-1">
               Try adjusting your search or filters
             </p>
           </div>

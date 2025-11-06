@@ -13,7 +13,7 @@ const Scholarships: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white py-6">
+    <div className="min-h-screen bg-white py-4">
       <div className="w-full px-6">
         {/* Header */}
         <Header />

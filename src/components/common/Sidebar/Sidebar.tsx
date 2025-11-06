@@ -33,49 +33,49 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
     {
       id: 'dashboard',
       label: 'Dashboard',
-      icon: <BookOpen size={20} />,
+      icon: <BookOpen size={18} />,
       path: '/dashboard',
       isActive: activeItem === 'dashboard',
     },
     {
       id: 'discovery',
       label: 'Discovery & Exploration',
-      icon: <Compass size={20} />,
+      icon: <Compass size={18} />,
       path: '/discovery',
       isActive: activeItem === 'discovery',
     },
     {
       id: 'research',
       label: 'Research & Shortlisting',
-      icon: <Search size={20} />,
+      icon: <Search size={18} />,
       path: '/research',
       isActive: activeItem === 'research',
     },
     {
       id: 'applications',
       label: 'Applications & Admissions',
-      icon: <FileText size={20} />,
+      icon: <FileText size={18} />,
       path: '/applications',
       isActive: activeItem === 'applications',
     },
     {
       id: 'scholarships',
       label: 'Scholarships & Financial Aid',
-      icon: <DollarSign size={20} />,
+      icon: <DollarSign size={18} />,
       path: '/scholarships',
       isActive: activeItem === 'scholarships',
     },
     {
       id: 'visa',
       label: 'Visa & Pre-Departure',
-      icon: <Plane size={20} />,
+      icon: <Plane size={18} />,
       path: '/visa',
       isActive: activeItem === 'visa',
     },
     {
       id: 'ai-chat',
       label: 'AI Chat',
-      icon: <MessageSquare size={20} />,
+      icon: <MessageSquare size={18} />,
       path: '/ai-chat',
       isActive: activeItem === 'ai-chat',
     },
@@ -83,46 +83,46 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
 
   return (
     <aside
-      className={`h-screen bg-white flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.15)] relative z-10 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-80'
+      className={`h-screen bg-white flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.15)] relative z-10 transition-all duration-300 ${isCollapsed ? 'w-18' : 'w-72'
         }`}
     >
       {/* Header */}
-      <div className={`p-6 ${isCollapsed ? 'flex items-center justify-center' : ''}`}>
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+      <div className={`p-4 ${isCollapsed ? 'flex items-center justify-center' : ''}`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'}`}>
           {isCollapsed ? (
-            <img src={pgIcon} alt="PG Logo" className="w-10 h-10" />
+            <img src={pgIcon} alt="PG Logo" className="w-8 h-8" />
           ) : (
-            <img src={logo} alt="PGadmit Logo" className="h-10" />
+            <img src={logo} alt="PGadmit Logo" className="h-8" />
           )}
         </div>
       </div>
 
       {/* Toggle Button */}
-      <div className={`px-4 ${isCollapsed ? 'flex justify-center' : 'flex justify-end'}`}>
+      <div className={`px-3 ${isCollapsed ? 'flex justify-center' : 'flex justify-end'}`}>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? (
-            <ChevronRight size={20} className="text-gray-600" />
+            <ChevronRight size={18} className="text-gray-600" />
           ) : (
-            <ChevronLeft size={20} className="text-gray-600" />
+            <ChevronLeft size={18} className="text-gray-600" />
           )}
         </button>
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 p-4 overflow-y-auto">
-        <ul className="space-y-2">
+      <nav className="flex-1 p-3 overflow-y-auto">
+        <ul className="space-y-1">
           {menuItems.map((item) => (
             <li key={item.id}>
               <Link
                 to={item.path}
                 className={`
-                  w-full flex items-center rounded-lg
+                  w-full flex items-center rounded-lg text-sm
                   transition-all duration-200
-                  ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3'}
+                  ${isCollapsed ? 'justify-center px-2 py-2' : 'gap-2.5 px-3 py-2'}
                   ${item.isActive
                     ? 'bg-primary-lightest text-primary-dark font-semibold'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -139,42 +139,42 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       </nav>
 
       {/* AI Counselor Section */}
-      <div className={`p-4 ${isCollapsed ? 'flex justify-center' : ''}`}>
+      <div className={`p-3 ${isCollapsed ? 'flex justify-center' : ''}`}>
         {isCollapsed ? (
           <Link
             to="/ai-chat"
-            className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-[1.05] transition-all duration-200"
+            className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-[1.05] transition-all duration-200"
             style={{
               background: 'linear-gradient(90deg, #EF6B5C 0%, #E8506A 100%)',
             }}
             title="Ask AI Assistant"
           >
-            <img src={aiAssistantIcon} alt="AI Assistant" className="w-5 h-5" />
+            <img src={aiAssistantIcon} alt="AI Assistant" className="w-4 h-4" />
           </Link>
         ) : (
           <>
             {/* AI Counselor Header */}
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                <img src={aiAssistantIcon} alt="AI Assistant" className="w-5 h-5" />
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center">
+                <img src={aiAssistantIcon} alt="AI Assistant" className="w-4 h-4" />
               </div>
-              <h3 className="text-lg font-bold text-primary-darkest">AI Counselor</h3>
+              <h3 className="text-base font-bold text-primary-darkest">AI Counselor</h3>
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-xs text-gray-600 mb-2.5">
               Your personal study abroad guide
             </p>
 
             {/* CTA Button */}
             <Link
               to="/ai-chat"
-              className="w-full text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+              className="w-full text-white font-semibold py-2 px-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg hover:shadow-xl hover:scale-[1.02] text-sm"
               style={{
                 background: 'linear-gradient(90deg, #EF6B5C 0%, #E8506A 100%)',
               }}
             >
-              <img src={aiAssistantIcon} alt="AI Assistant" className="w-5 h-5" />
+              <img src={aiAssistantIcon} alt="AI Assistant" className="w-4 h-4" />
               Ask AI Assistant
             </Link>
           </>

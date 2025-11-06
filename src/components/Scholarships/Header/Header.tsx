@@ -10,11 +10,11 @@ const Header: React.FC<HeaderProps> = ({
   subtitle = 'Discover and manage scholarship opportunities with AI-powered matching',
 }) => {
   return (
-    <div className="mb-6">
-      <h1 className="text-3xl md:text-4xl font-bold text-primary-darkest mb-2">
+    <div className="mb-4">
+      <h1 className="text-2xl md:text-3xl font-bold text-primary-darkest mb-1">
         {title}
       </h1>
-      <p className="text-neutral-gray text-base md:text-lg">{subtitle}</p>
+      <p className="text-neutral-gray text-sm md:text-base">{subtitle}</p>
     </div>
   );
 };

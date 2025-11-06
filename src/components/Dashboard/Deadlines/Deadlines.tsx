@@ -46,16 +46,7 @@ const Deadlines: React.FC<DeadlinesProps> = ({
       type: 'interview',
       priority: 'medium',
       daysLeft: 15,
-    },
-    {
-      id: '4',
-      title: 'Transcript Submission',
-      university: 'Carnegie Mellon',
-      date: '2024-12-15',
-      type: 'document',
-      priority: 'medium',
-      daysLeft: 20,
-    },
+    }
   ],
   onViewDeadline,
   onViewAll,
