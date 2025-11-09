@@ -1,6 +1,6 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
-import { Dashboard, AIChat, Scholarships, Universities } from './pages';
+import { Dashboard, AIChat, Scholarships, Universities, Profile, AdditionalResources } from './pages';
 import { Sidebar } from './components';
 
 function App() {
@@ -21,6 +21,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/scholarships" element={<Scholarships />} />
           <Route path="/universities" element={<Universities />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/resources" element={<AdditionalResources />} />
           <Route path="/ai-chat" element={<AIChat />} />
         </Routes>
       </main>

@@ -11,6 +11,8 @@ import {
   ChevronRight,
   MessageSquare,
   Building2,
+  User,
+  LayoutGrid,
 } from 'lucide-react';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
@@ -79,6 +81,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       icon: <Plane size={18} />,
       path: '/visa',
       isActive: activeItem === 'visa',
+    },
+    {
+      id: 'profile',
+      label: 'My Profile',
+      icon: <User size={18} />,
+      path: '/profile',
+      isActive: activeItem === 'profile',
+    },
+    {
+      id: 'resources',
+      label: 'Additional Resources',
+      icon: <LayoutGrid size={18} />,
+      path: '/resources',
+      isActive: activeItem === 'resources',
     },
     {
       id: 'ai-chat',
