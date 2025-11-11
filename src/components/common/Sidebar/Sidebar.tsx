@@ -13,6 +13,7 @@ import {
   Building2,
   User,
   LayoutGrid,
+  BookOpenText
 } from 'lucide-react';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
@@ -39,6 +40,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       icon: <BookOpen size={18} />,
       path: '/dashboard',
       isActive: activeItem === 'dashboard',
+    },
+    {
+      id: 'profile',
+      label: 'My Profile',
+      icon: <User size={18} />,
+      path: '/profile',
+      isActive: activeItem === 'profile',
     },
     {
       id: 'discovery',
@@ -83,18 +91,18 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       isActive: activeItem === 'visa',
     },
     {
-      id: 'profile',
-      label: 'My Profile',
-      icon: <User size={18} />,
-      path: '/profile',
-      isActive: activeItem === 'profile',
-    },
-    {
       id: 'resources',
       label: 'Additional Resources',
       icon: <LayoutGrid size={18} />,
       path: '/resources',
       isActive: activeItem === 'resources',
+    },
+    {
+      id: 'essay',
+      label: 'Essay Center',
+      icon: <BookOpenText size={18} />,
+      path: '/essay-center',
+      isActive: activeItem === 'essay-center',
     },
     {
       id: 'ai-chat',

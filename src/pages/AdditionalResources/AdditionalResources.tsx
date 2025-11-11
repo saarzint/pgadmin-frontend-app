@@ -5,9 +5,7 @@ import {
   GraduationCap,
   Home,
   Shield,
-  BookOpen,
-  Upload,
-  Plus,
+  BookOpen
 } from 'lucide-react';
 
 interface Resource {
@@ -81,24 +79,6 @@ const AdditionalResources: React.FC = () => {
 
           {/* Currency Converter Card */}
           <CurrencyConverter />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={handleUploadDocument}
-            className="flex items-center gap-2 px-8 py-3 bg-primary-darkest text-white rounded-lg hover:bg-primary-dark transition-colors text-base font-semibold shadow-sm"
-          >
-            <Upload size={20} />
-            Upload Document
-          </button>
-          <button
-            onClick={handleAddNew}
-            className="flex items-center gap-2 px-8 py-3 bg-primary-lightest text-primary-darkest rounded-lg hover:bg-primary-light transition-colors text-base font-semibold"
-          >
-            <Plus size={20} />
-            Add New
-          </button>
         </div>
       </div>
     </div>
