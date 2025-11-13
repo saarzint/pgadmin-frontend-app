@@ -5,7 +5,7 @@
 
 export const API_CONFIG = {
   baseURL: import.meta.env.VITE_API_BASE_URL || 'https://pgadmit-232251258466.europe-west1.run.app',
-  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
+  timeout: 0, // No timeout - wait indefinitely for response
   withCredentials: false,
 } as const;
 

@@ -20,7 +20,6 @@ Update the [.env](.env) file in the project root:
 
 ```env
 VITE_API_BASE_URL=https://pgadmit-232251258466.europe-west1.run.app
-VITE_API_TIMEOUT=30000
 ```
 
 ## Usage Example
@@ -112,7 +111,7 @@ function UniversitySearch() {
 - Authorization token handling
 - Error handling and transformation
 - Request/response logging in development
-- Timeout handling
+- No timeout - waits indefinitely for API response
 
 ### Error Handling
 - User-friendly error messages
