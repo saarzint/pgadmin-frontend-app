@@ -1,1 +1,1 @@
-export { default } from './VisaCenter';
+export { default as VisaCenter } from './VisaCenter';
