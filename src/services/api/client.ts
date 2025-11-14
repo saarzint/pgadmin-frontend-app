@@ -17,7 +17,10 @@ class ApiClient {
       withCredentials: API_CONFIG.withCredentials,
       headers: {
         'Content-Type': 'application/json',
+        'Connection': 'keep-alive',
       },
+      maxRedirects: 5,
+      validateStatus: (status) => status < 500, // Accept all status codes below 500
     });
 
     this.setupInterceptors();
@@ -95,7 +98,13 @@ class ApiClient {
           }
         } else if (error.request) {
           // Request made but no response
-          apiError.message = 'No response from server. Please check your connection.';
+          if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+            apiError.message = 'Request timeout. The server is taking too long to respond.';
+          } else if (error.message.includes('ConnectionTerminated') || error.message.includes('ECONNRESET')) {
+            apiError.message = 'Connection was terminated by the server. This may be due to a long-running request. Please try again.';
+          } else {
+            apiError.message = 'No response from server. Please check your connection.';
+          }
         } else {
           // Error setting up request
           apiError.message = error.message;

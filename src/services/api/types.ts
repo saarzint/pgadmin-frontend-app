@@ -24,30 +24,43 @@ export interface UniversitySearchRequest {
 }
 
 export interface UniversitySearchResponse {
-  result_id: number;
+  search_id: number;
   message: string;
+  results_endpoint: string;
+  universities_found: number;
+  universities_stored: number;
 }
 
 export interface UniversityResult {
   id: number;
-  name: string;
+  university_name: string;
   location: string;
-  ranking?: number;
-  programs?: string[];
-  requirements?: {
-    gpa?: number;
-    testScores?: {
-      gre?: number;
-      toefl?: number;
-      ielts?: number;
-    };
+  tuition: number;
+  acceptance_rate: number;
+  programs: string[];
+  rank_category: string;
+  why_fit: string;
+  search_id: number;
+  user_profile_id: number;
+  created_at: string;
+  recommendation_metadata: {
+    data_completeness: string;
+    recommendation_confidence: string;
+    preference_conflicts: string | null;
+    search_broadened: boolean;
+    missing_criteria: string | null;
   };
-  [key: string]: unknown;
+  source: {
+    agent_output: string;
+    stored_at: string;
+  };
 }
 
 export interface UniversityResultsResponse {
-  user_profile_id: number;
-  search_request: string;
+  latest_search: {
+    search_id: number;
+    timestamp: string;
+    has_profile_snapshot: boolean;
+  };
   results: UniversityResult[];
-  timestamp?: string;
 }

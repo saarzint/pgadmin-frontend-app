@@ -7,25 +7,32 @@ import type { UniversityResult } from '../../services/api/types';
 
 const Universities: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingProgress, setLoadingProgress] = useState<string>('');
 
-  // Fetch university search results
+  // Fetch university search results with polling
   const fetchUniversities = async (userProfileId: number, searchRequest: string) => {
     setLoading(true);
+    setLoadingProgress('Initiating search...');
 
     try {
       console.log('=== Starting University Search ===');
       console.log('Request:', { userProfileId, searchRequest });
 
-      // Step 1: Initiate search
-      const searchResponse = await universityService.searchUniversities({
-        user_profile_id: userProfileId,
-        search_request: searchRequest,
-      });
-
-      console.log('Search Response:', searchResponse);
-
-      // Step 2: Fetch results using the result_id
-      const resultsResponse = await universityService.getResults(searchResponse.result_id);
+      // Use the searchAndWaitForResults method with polling
+      const resultsResponse = await universityService.searchAndWaitForResults(
+        {
+          user_profile_id: userProfileId,
+          search_request: searchRequest,
+        },
+        {
+          maxAttempts: 60,
+          intervalMs: 5000,
+          onProgress: (attempt, maxAttempts) => {
+            setLoadingProgress(`Fetching results... (${attempt}/${maxAttempts})`);
+            console.log(`Polling attempt ${attempt}/${maxAttempts}`);
+          },
+        }
+      );
 
       console.log('Results Response:', resultsResponse);
       console.log('Results Data:', JSON.stringify(resultsResponse, null, 2));
@@ -34,8 +41,10 @@ const Universities: React.FC = () => {
     } catch (err) {
       console.error('Error fetching universities:', err);
       ErrorHandler.log(err, 'Universities Page - Fetch');
+      setLoadingProgress('Failed to load universities');
     } finally {
       setLoading(false);
+      setLoadingProgress('');
     }
   };
 
@@ -61,9 +70,11 @@ const Universities: React.FC = () => {
 
         {/* Loading Indicator */}
         {loading && (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex flex-col items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-            <span className="ml-3 text-gray-600">Loading universities...</span>
+            <span className="ml-3 mt-3 text-gray-600">
+              {loadingProgress || 'Loading universities...'}
+            </span>
           </div>
         )}
 
