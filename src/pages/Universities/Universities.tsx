@@ -8,6 +8,39 @@ import type { UniversityResult } from '../../services/api/types';
 const Universities: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
+  const [universities, setUniversities] = useState<UniversityData[]>([]);
+
+  // Transform API result to UniversityData format
+  const transformUniversityData = (result: UniversityResult): UniversityData => {
+    // Calculate match percentage based on rank category
+    const matchPercentage =
+      result.rank_category === 'Safety' ? 85 :
+      result.rank_category === 'Target' ? 70 :
+      result.rank_category === 'Reach' ? 50 : 65;
+
+    return {
+      id: result.id.toString(),
+      name: result.university_name,
+      location: result.location,
+      country: 'USA', // Default, could be parsed from location
+      ranking: `Top ${Math.round(result.acceptance_rate * 100)}% Acceptance Rate`,
+      tags: [result.rank_category, ...result.programs.slice(0, 2)],
+      description: result.why_fit,
+      tuitionFee: `$${result.tuition.toLocaleString()}/year`,
+      acceptanceRate: `${Math.round(result.acceptance_rate * 100)}%`,
+      studentPopulation: 'N/A', // Not in API response
+      programs: result.programs,
+      requirements: [
+        { label: `Confidence: ${result.recommendation_metadata.recommendation_confidence}` },
+        { label: `Data Quality: ${result.recommendation_metadata.data_completeness}` },
+        ...(result.recommendation_metadata.preference_conflicts && Array.isArray(result.recommendation_metadata.preference_conflicts) ?
+          result.recommendation_metadata.preference_conflicts.map((c: string) => ({ label: `⚠️ ${c}` })) : []
+        ),
+      ],
+      matchPercentage,
+      applicationDeadline: undefined,
+    };
+  };
 
   // Fetch university search results with polling
   const fetchUniversities = async (userProfileId: number, searchRequest: string) => {
@@ -37,6 +70,10 @@ const Universities: React.FC = () => {
       console.log('Results Response:', resultsResponse);
       console.log('Results Data:', JSON.stringify(resultsResponse, null, 2));
       console.log('=== University Search Complete ===');
+
+      // Transform and set the universities data
+      const transformedData = resultsResponse.results.map(transformUniversityData);
+      setUniversities(transformedData);
 
     } catch (err) {
       console.error('Error fetching universities:', err);
@@ -79,10 +116,20 @@ const Universities: React.FC = () => {
         )}
 
         {/* Universities List with Tabs */}
-        <UniversitiesList
-          onApply={handleApply}
-          onViewDetails={handleViewDetails}
-        />
+        {!loading && universities.length > 0 && (
+          <UniversitiesList
+            universities={universities}
+            onApply={handleApply}
+            onViewDetails={handleViewDetails}
+          />
+        )}
+
+        {/* No Results */}
+        {!loading && universities.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No universities found. Try adjusting your search criteria.</p>
+          </div>
+        )}
       </div>
     </div>
   );
