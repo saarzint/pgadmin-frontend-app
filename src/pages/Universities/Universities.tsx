@@ -12,32 +12,55 @@ const Universities: React.FC = () => {
 
   // Transform API result to UniversityData format
   const transformUniversityData = (result: UniversityResult): UniversityData => {
-    // Calculate match percentage based on rank category
-    const matchPercentage =
-      result.rank_category === 'Safety' ? 85 :
-      result.rank_category === 'Target' ? 70 :
-      result.rank_category === 'Reach' ? 50 : 65;
+    // Build recommendation metadata as bullet points dynamically
+    const metadataPoints: { label: string }[] = [];
+    const metadata = result.recommendation_metadata;
+
+    // Helper function to format field names (snake_case to Title Case)
+    const formatFieldName = (field: string): string => {
+      return field
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    // Iterate through all metadata fields dynamically
+    Object.entries(metadata).forEach(([key, value]) => {
+      // Skip null or undefined values
+      if (value === null || value === undefined) {
+        return;
+      }
+
+      // Format the value based on its type
+      let displayValue: string;
+      if (typeof value === 'boolean') {
+        displayValue = value ? 'Yes' : 'No';
+      } else if (Array.isArray(value)) {
+        displayValue = value.length > 0 ? value.join(', ') : 'None';
+      } else {
+        displayValue = String(value);
+      }
+
+      // Add to metadata points
+      metadataPoints.push({
+        label: `${formatFieldName(key)}: ${displayValue}`
+      });
+    });
 
     return {
       id: result.id.toString(),
       name: result.university_name,
       location: result.location,
-      country: 'USA', // Default, could be parsed from location
-      ranking: `Top ${Math.round(result.acceptance_rate * 100)}% Acceptance Rate`,
+      country: '', // Not provided in API
+      ranking: result.rank_category, // Show rank category as-is
       tags: [result.rank_category, ...result.programs.slice(0, 2)],
       description: result.why_fit,
       tuitionFee: `$${result.tuition.toLocaleString()}/year`,
-      acceptanceRate: `${Math.round(result.acceptance_rate * 100)}%`,
-      studentPopulation: 'N/A', // Not in API response
+      acceptanceRate: `${result.acceptance_rate}%`, // Show acceptance rate as-is
+      studentPopulation: '', // Not provided in API
       programs: result.programs,
-      requirements: [
-        { label: `Confidence: ${result.recommendation_metadata.recommendation_confidence}` },
-        { label: `Data Quality: ${result.recommendation_metadata.data_completeness}` },
-        ...(result.recommendation_metadata.preference_conflicts && Array.isArray(result.recommendation_metadata.preference_conflicts) ?
-          result.recommendation_metadata.preference_conflicts.map((c: string) => ({ label: `⚠️ ${c}` })) : []
-        ),
-      ],
-      matchPercentage,
+      requirements: metadataPoints,
+      matchPercentage: 0, // Not provided in API
       applicationDeadline: undefined,
     };
   };

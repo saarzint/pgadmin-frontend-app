@@ -10,52 +10,7 @@ interface UniversitiesListProps {
 }
 
 const UniversitiesList: React.FC<UniversitiesListProps> = ({
-  universities = [
-    {
-      id: '1',
-      name: 'Stanford University',
-      location: 'Stanford, California',
-      country: 'USA',
-      ranking: '#3',
-      tags: ['Private', 'Research', 'Top 10'],
-      description:
-        'Stanford University is a private research university in Stanford, California, known for its entrepreneurial spirit and proximity to Silicon Valley.',
-      tuitionFee: '$55,000/year',
-      acceptanceRate: '4.3%',
-      studentPopulation: '17,000',
-      programs: ['Computer Science', 'Engineering', 'Business', 'Medicine'],
-      requirements: [
-        { label: 'GPA: 3.9+' },
-        { label: 'SAT: 1450+' },
-        { label: 'TOEFL: 100+' },
-        { label: '3 Letters of Recommendation' },
-      ],
-      matchPercentage: 95,
-      applicationDeadline: 'Jan 5, 2025',
-    },
-    {
-      id: '2',
-      name: 'Massachusetts Institute of Technology',
-      location: 'Cambridge, Massachusetts',
-      country: 'USA',
-      ranking: '#1',
-      tags: ['Private', 'Technical', 'Top 10'],
-      description:
-        'MIT is a private research university focused on science and technology, known for its rigorous academics and innovation.',
-      tuitionFee: '$57,000/year',
-      acceptanceRate: '3.9%',
-      studentPopulation: '11,500',
-      programs: ['Computer Science', 'Engineering', 'Physics', 'Mathematics'],
-      requirements: [
-        { label: 'GPA: 4.0' },
-        { label: 'SAT: 1520+' },
-        { label: 'TOEFL: 100+' },
-        { label: 'Strong Math Background' },
-      ],
-      matchPercentage: 92,
-      applicationDeadline: 'Jan 1, 2025',
-    },
-  ],
+  universities = [],
   onApply,
   onViewDetails,
 }) => {

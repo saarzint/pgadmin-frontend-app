@@ -42,12 +42,12 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
         {/* Mobile: Match Score at Top */}
         <div className="lg:hidden">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <div className="text-3xl sm:text-4xl font-bold text-primary-darkest">
                 {university.matchPercentage}%
               </div>
               <span className="text-sm text-gray-600">AI Match</span>
-            </div>
+            </div> */}
             <button
               onClick={() => onToggleFavorite?.(university.id)}
               className="flex-shrink-0 p-1.5 hover:bg-gray-50 rounded-full transition-colors"
@@ -131,24 +131,38 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
             </div>
 
             {/* Student Population */}
-            <div className="flex items-center gap-2 min-w-0">
-              <BookOpen size={16} className="text-gray-600 flex-shrink-0" />
-              <span className="text-sm sm:text-base text-gray-900 font-medium truncate">{university.studentPopulation} students</span>
-            </div>
+            {university.studentPopulation && (
+              <div className="flex items-center gap-2 min-w-0">
+                <BookOpen size={16} className="text-gray-600 flex-shrink-0" />
+                <span className="text-sm sm:text-base text-gray-900 font-medium truncate">{university.studentPopulation} students</span>
+              </div>
+            )}
           </div>
 
-          {/* Key Highlights */}
-          <div>
-            <p className="text-sm font-semibold text-gray-900 mb-2">Key Highlights:</p>
-            <ul className="space-y-1">
-              {university.requirements.slice(0, 3).map((req, index) => (
-                <li key={index} className="text-xs sm:text-sm text-gray-600 flex items-start gap-2">
-                  <span className="text-gray-400 mt-0.5 flex-shrink-0">•</span>
-                  <span>{req.label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Why Fit */}
+          {university.description && (
+            <div>
+              <p className="text-sm font-semibold text-gray-900 mb-2">Why This University Fits:</p>
+              <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                {university.description}
+              </p>
+            </div>
+          )}
+
+          {/* Recommendation Metadata */}
+          {university.requirements.length > 0 && (
+            <div>
+              <p className="text-sm font-semibold text-gray-900 mb-2">Recommendation Details:</p>
+              <ul className="space-y-1">
+                {university.requirements.map((req, index) => (
+                  <li key={index} className="text-xs sm:text-sm text-gray-600 flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5 flex-shrink-0">•</span>
+                    <span>{req.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Right - Match Score and Actions (Desktop Only) */}
@@ -168,7 +182,7 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="w-full space-y-3">
+          {/* <div className="w-full space-y-3">
             <button
               onClick={() => onViewDetails?.(university.id)}
               className="w-full py-3 px-4 rounded-lg font-semibold text-sm transition-colors bg-black text-white hover:bg-gray-800"
@@ -188,12 +202,12 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
               <MessageSquare size={16} />
               Chat with University
             </button>
-          </div>
+          </div> */}
 
           {/* Compare Link */}
-          <button className="mt-4 text-sm text-gray-600 hover:text-gray-900 underline">
+          {/* <button className="mt-4 text-sm text-gray-600 hover:text-gray-900 underline">
             Compare Universities
-          </button>
+          </button> */}
         </div>
       </div>
 
