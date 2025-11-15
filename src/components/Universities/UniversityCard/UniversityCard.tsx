@@ -168,7 +168,7 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
         {/* Right - Match Score and Actions (Desktop Only) */}
         <div className="hidden lg:flex flex-shrink-0 w-64 flex-col items-center">
           {/* Match Score */}
-          <div className="text-center mb-4 w-full">
+          {/* <div className="text-center mb-4 w-full">
             <div className="text-5xl font-bold text-primary-darkest mb-1">
               {university.matchPercentage}%
             </div>
@@ -179,7 +179,7 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
                 style={{ width: `${university.matchPercentage}%` }}
               ></div>
             </div>
-          </div>
+          </div> */}
 
           {/* Action Buttons */}
           {/* <div className="w-full space-y-3">
