@@ -64,3 +64,52 @@ export interface UniversityResultsResponse {
   };
   results: UniversityResult[];
 }
+
+// Scholarship Search Types
+export interface ScholarshipSearchRequest {
+  user_profile_id: number;
+}
+
+export interface ScholarshipSearchResponse {
+  search_id: number;
+  message: string;
+  results_endpoint: string;
+}
+
+export interface ScholarshipResult {
+  id: number;
+  scholarship_name: string;
+  provider: string;
+  amount: number;
+  deadline: string;
+  duration: string;
+  recipients_count: number;
+  eligibility_criteria: string[];
+  required_documents: string[];
+  scholarship_type: string[];
+  why_fit: string;
+  match_score: number;
+  search_id: number;
+  user_profile_id: number;
+  created_at: string;
+  recommendation_metadata: {
+    data_completeness: string;
+    recommendation_confidence: string;
+    preference_conflicts: string | null;
+    search_broadened: boolean;
+    missing_criteria: string | null;
+  };
+  source: {
+    agent_output: string;
+    stored_at: string;
+  };
+}
+
+export interface ScholarshipResultsResponse {
+  latest_search: {
+    search_id: number;
+    timestamp: string;
+    has_profile_snapshot: boolean;
+  };
+  results: ScholarshipResult[];
+}

@@ -15,4 +15,9 @@ export const API_ENDPOINTS = {
     SEARCH: '/search_universities',
     RESULTS: (id: number) => `/results/${id}`,
   },
+  // Scholarships Search
+  SCHOLARSHIPS: {
+    SEARCH: '/search_scholarships',
+    RESULTS: (userProfileId: number) => `/results/scholarships/${userProfileId}`,
+  },
 } as const;

@@ -1,35 +1,33 @@
-import React, { useState } from 'react';
-import { Calculator } from 'lucide-react';
+import React from 'react';
+import { Coins } from 'lucide-react';
 
 const CurrencyConverter: React.FC = () => {
-  const [fromCurrency] = useState('USD');
-  const [toCurrency] = useState('EUR');
-  const [exchangeRate] = useState(0.92);
-
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col items-center justify-center hover:shadow-md transition-shadow min-h-[280px]">
-      <div className="w-20 h-20 mb-4 flex items-center justify-center bg-primary-lightest rounded-xl">
-        <Calculator size={48} className="text-primary" strokeWidth={1.5} />
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-3 rounded-xl bg-amber-50 text-amber-600">
+          <Coins size={24} />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-primary-darkest">
+            Currency Converter
+          </h3>
+          <p className="text-xs text-neutral-gray">
+            Powered by Wise.com
+          </p>
+        </div>
       </div>
 
-      <h3 className="text-xl font-semibold text-primary-darkest mb-4 text-center">Currency Converter</h3>
-
-      <div className="w-full space-y-3">
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 rounded-lg">
-          <span className="text-sm text-neutral-gray">From: {fromCurrency}</span>
-          <span className="text-xl">🇺🇸</span>
-        </div>
-
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 rounded-lg">
-          <span className="text-sm text-neutral-gray">To: {toCurrency}</span>
-          <span className="text-xl">🇪🇺</span>
-        </div>
-
-        <div className="text-center pt-2">
-          <span className="text-2xl font-bold text-primary-darkest">
-            {exchangeRate.toFixed(2)} {toCurrency}
-          </span>
-        </div>
+      <div className="flex justify-center bg-gray-50 rounded-xl p-4">
+        <iframe
+          title="Currency Converter"
+          src="https://wise.com/gb/currency-converter/fx-widget/converter?sourceCurrency=INR&targetCurrency=EUR"
+          height="490"
+          width="340"
+          frameBorder="0"
+          allowTransparency={true}
+          className="border-0 rounded-lg"
+        />
       </div>
     </div>
   );

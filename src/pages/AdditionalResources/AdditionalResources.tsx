@@ -3,8 +3,6 @@ import { ResourceCard, CurrencyConverter } from '../../components/AdditionalReso
 import {
   FileText,
   GraduationCap,
-  Home,
-  Shield,
   BookOpen
 } from 'lucide-react';
 
@@ -21,43 +19,21 @@ const AdditionalResources: React.FC = () => {
       id: '1',
       title: 'Document Translation',
       icon: FileText,
-      url: 'https://translate.google.com',
+      url: 'https://rushtranslate.com?ref=pgadmit',
     },
     {
       id: '2',
       title: 'Student Loans',
       icon: GraduationCap,
-      url: '#',
+      url: 'https://app.mpowerfinancing.com/eligibility?utm_source=pgadmit&utm_medium=link',
     },
     {
       id: '3',
-      title: 'Student Housing',
-      icon: Home,
-      url: '#',
-    },
-    {
-      id: '4',
-      title: 'Travel Insurance',
-      icon: Shield,
-      url: '#',
-    },
-    {
-      id: '5',
-      title: 'Test Prep Services',
+      title: 'Test Prep (English & Standardized Tests)',
       icon: BookOpen,
-      url: '#',
+      url: 'https://imp.i384100.net/2aAenQ',
     },
   ]);
-
-  const handleUploadDocument = () => {
-    console.log('Upload document clicked');
-    // Implement document upload functionality
-  };
-
-  const handleAddNew = () => {
-    console.log('Add new resource clicked');
-    // Implement add new resource functionality
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-6">
