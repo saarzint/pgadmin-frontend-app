@@ -6,54 +6,13 @@ import FilterModal, { FilterValues } from '../FilterModal/FilterModal';
 interface ScholarshipsListProps {
   scholarships?: ScholarshipData[];
   onApply?: (id: string) => void;
-  onViewDetails?: (id: string) => void;
+  // onViewDetails?: (id: string) => void; // Commented out - using sourceUrl directly
 }
 
 const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
-  scholarships = [
-    {
-      id: '1',
-      title: 'Merit Excellence Scholarship',
-      university: 'Stanford University',
-      tags: ['Merit-based', 'USA', 'Undergraduate', 'Renewable'],
-      description:
-        'Full tuition scholarship for outstanding international students in STEM programs.',
-      amount: '$25,000',
-      deadline: '2024-12-01',
-      deadlinePassed: true,
-      recipients: '50 recipients',
-      duration: '4 years',
-      eligibility: ['GPA 3.5+', 'International Students', 'STEM Fields'],
-      requirements: [
-        { label: 'Academic Transcripts' },
-        { label: 'Essay (500 words)' },
-        { label: '2 Letters of Recommendation' },
-      ],
-      matchPercentage: 95,
-    },
-    {
-      id: '2',
-      title: 'STEM Excellence Award',
-      university: 'MIT',
-      tags: ['Merit-based', 'USA', 'Graduate', 'Need-based'],
-      description:
-        'Award for graduate students pursuing advanced degrees in STEM fields with demonstrated financial need.',
-      amount: '$30,000',
-      deadline: '2024-11-30',
-      recipients: '30 recipients',
-      duration: '2 years',
-      eligibility: ['Graduate Students', 'STEM Fields', 'Financial Need'],
-      requirements: [
-        { label: 'Graduate Transcripts' },
-        { label: 'Research Proposal' },
-        { label: '3 Letters of Recommendation' },
-        { label: 'Financial Need Documentation' },
-      ],
-      matchPercentage: 90,
-    },
-  ],
+  scholarships = [],
   onApply,
-  onViewDetails,
+  // onViewDetails, // Commented out - using sourceUrl directly
 }) => {
   const [activeTab, setActiveTab] = useState<string>('discover');
   const [searchQuery, setSearchQuery] = useState('');
@@ -179,7 +138,7 @@ const ScholarshipsList: React.FC<ScholarshipsListProps> = ({
               key={scholarship.id}
               scholarship={scholarship}
               onApply={onApply}
-              onViewDetails={onViewDetails}
+              // onViewDetails={onViewDetails} // Commented out - using sourceUrl directly
               onToggleFavorite={handleToggleFavorite}
               isFavorite={favorites.has(scholarship.id)}
             />

@@ -12,98 +12,86 @@ const Scholarships: React.FC = () => {
 
   // Transform API result to ScholarshipData format
   const transformScholarshipData = (result: ScholarshipResult): ScholarshipData => {
-    // Build requirements metadata as bullet points dynamically
+    // Build requirements metadata from eligibility analysis
     const requirementPoints: { label: string }[] = [];
-    const metadata = result.recommendation_metadata;
+    const analysis = result.eligibility_summary.eligibility_analysis;
 
-    // Helper function to format field names (snake_case to Title Case)
-    const formatFieldName = (field: string): string => {
-      return field
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    };
-
-    // Add required documents as requirements
-    result.required_documents.forEach(doc => {
-      requirementPoints.push({ label: doc });
+    // Add strengths as requirement points
+    analysis.strengths.forEach(strength => {
+      requirementPoints.push({ label: strength });
     });
 
-    // Iterate through all metadata fields dynamically
-    Object.entries(metadata).forEach(([key, value]) => {
-      // Skip null or undefined values
-      if (value === null || value === undefined) {
-        return;
-      }
-
-      // Format the value based on its type
-      let displayValue: string;
-      if (typeof value === 'boolean') {
-        displayValue = value ? 'Yes' : 'No';
-      } else if (Array.isArray(value)) {
-        displayValue = value.length > 0 ? value.join(', ') : 'None';
-      } else {
-        displayValue = String(value);
-      }
-
-      // Add to requirement points
-      requirementPoints.push({
-        label: `${formatFieldName(key)}: ${displayValue}`
-      });
+    // Add highlights if available
+    result.eligibility_summary.highlights.forEach(highlight => {
+      requirementPoints.push({ label: highlight });
     });
 
-    // Check if deadline has passed
-    const deadlineDate = new Date(result.deadline);
-    const now = new Date();
-    const deadlinePassed = deadlineDate < now;
+    // Check if deadline has passed (only if deadline exists)
+    let deadlinePassed = false;
+    if (result.deadline) {
+      const deadlineDate = new Date(result.deadline);
+      const now = new Date();
+      deadlinePassed = deadlineDate < now;
+    }
 
     return {
       id: result.id.toString(),
-      title: result.scholarship_name,
-      university: result.provider,
-      tags: [...result.scholarship_type, result.duration],
-      description: result.why_fit,
-      amount: `$${result.amount.toLocaleString()}`,
-      deadline: result.deadline,
+      title: result.name,
+      university: result.category,
+      tags: result.eligibility_summary.scholarship_categories,
+      description: result.eligibility_summary.why_match,
+      amount: result.award_amount ? `$${result.award_amount}` : 'Amount varies',
+      deadline: result.deadline || 'No deadline specified',
       deadlinePassed,
-      recipients: `${result.recipients_count} recipients`,
-      duration: result.duration,
-      eligibility: result.eligibility_criteria,
+      recipients: result.renewable_flag ? 'Renewable scholarship' : 'One-time award',
+      duration: result.deadline ? `${result.days_until_deadline} days remaining` : 'Rolling deadline',
+      eligibility: analysis.strengths,
       requirements: requirementPoints,
-      matchPercentage: Math.round(result.match_score * 100), // Convert 0-1 to 0-100
+      matchPercentage: result.eligibility_summary.match_score,
+      // Additional API attributes
+      sourceUrl: result.source_url,
+      renewableFlag: result.renewable_flag,
+      matchCategory: result.eligibility_summary.match_category,
+      needBased: result.eligibility_summary.need_based,
+      essayRequired: result.eligibility_summary.essay_required,
+      gpaRequirement: result.eligibility_summary.gpa_requirement,
+      daysUntilDeadline: result.days_until_deadline,
+      demographicRequirements: result.eligibility_summary.demographic_requirements,
+      majorRestrictions: result.eligibility_summary.major_restrictions,
+      nearMissReasons: result.eligibility_summary.near_miss_reasons,
+      eligibilityIssues: analysis.eligibility_issues,
     };
   };
 
-  // Fetch scholarship search results with polling
+  // Fetch scholarship search results
   const fetchScholarships = async (userProfileId: number) => {
     setLoading(true);
     setLoadingProgress('Initiating scholarship search...');
 
     try {
       console.log('=== Starting Scholarship Search ===');
-      console.log('Request:', { userProfileId });
+      console.log('User Profile ID:', userProfileId);
 
-      // Use the searchAndWaitForResults method with polling
-      const resultsResponse = await scholarshipService.searchAndWaitForResults(
-        {
-          user_profile_id: userProfileId,
-        },
-        {
-          maxAttempts: 60,
-          intervalMs: 5000,
-          onProgress: (attempt, maxAttempts) => {
-            setLoadingProgress(`Fetching results... (${attempt}/${maxAttempts})`);
-            console.log(`Polling attempt ${attempt}/${maxAttempts}`);
-          },
-        }
-      );
+      // Step 1 & 2: Search and get results
+      // This calls /search_scholarships first, then fetches from the results_endpoint
+      setLoadingProgress('Searching for scholarships...');
+      const resultsResponse = await scholarshipService.searchAndGetResults({
+        user_profile_id: userProfileId,
+      });
 
       console.log('Results Response:', resultsResponse);
-      console.log('Results Data:', JSON.stringify(resultsResponse, null, 2));
+      console.log('Total Scholarships:', resultsResponse.summary.total_scholarships);
       console.log('=== Scholarship Search Complete ===');
 
+      // Combine all scholarship groups (urgent, upcoming, future) into one array
+      const allScholarships = [
+        ...resultsResponse.scholarships.urgent,
+        ...resultsResponse.scholarships.upcoming,
+        ...resultsResponse.scholarships.future,
+      ];
+
       // Transform and set the scholarships data
-      const transformedData = resultsResponse.results.map(transformScholarshipData);
+      const transformedData = allScholarships.map(transformScholarshipData);
       setScholarships(transformedData);
 
     } catch (err) {
@@ -126,9 +114,10 @@ const Scholarships: React.FC = () => {
     console.log('Starting application for scholarship:', id);
   };
 
-  const handleViewDetails = (id: string) => {
-    console.log('Viewing details for scholarship:', id);
-  };
+  // Commented out - View Details now uses sourceUrl directly
+  // const handleViewDetails = (id: string) => {
+  //   console.log('Viewing details for scholarship:', id);
+  // };
 
   return (
     <div className="min-h-screen bg-white py-4">
@@ -154,7 +143,7 @@ const Scholarships: React.FC = () => {
           <ScholarshipsList
             scholarships={scholarships}
             onApply={handleApply}
-            onViewDetails={handleViewDetails}
+            // onViewDetails={handleViewDetails} // Commented out - using sourceUrl directly
           />
         )}
 

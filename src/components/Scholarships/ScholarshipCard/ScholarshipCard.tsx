@@ -17,12 +17,24 @@ export interface ScholarshipData {
     label: string;
   }[];
   matchPercentage: number;
+  sourceUrl: string;
+  // Additional API attributes
+  renewableFlag: boolean;
+  matchCategory: string;
+  needBased: boolean;
+  essayRequired: boolean;
+  gpaRequirement: number | null;
+  daysUntilDeadline: number | null;
+  demographicRequirements: string[];
+  majorRestrictions: string[];
+  nearMissReasons: string[];
+  eligibilityIssues: string[];
 }
 
 interface ScholarshipCardProps {
   scholarship: ScholarshipData;
   onApply?: (id: string) => void;
-  onViewDetails?: (id: string) => void;
+  // onViewDetails?: (id: string) => void; // Commented out - using sourceUrl instead
   onToggleFavorite?: (id: string) => void;
   isFavorite?: boolean;
 }
@@ -30,7 +42,7 @@ interface ScholarshipCardProps {
 const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
   scholarship,
   onApply,
-  onViewDetails,
+  // onViewDetails, // Commented out - using sourceUrl instead
   onToggleFavorite,
   isFavorite = false,
 }) => {
@@ -156,7 +168,7 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
 
           {/* Actions */}
           <div className="space-y-1.5 mt-4">
-            <button
+            {/* <button
               onClick={() => onApply?.(scholarship.id)}
               disabled={scholarship.deadlinePassed}
               className={`w-full py-2 px-3 rounded-lg font-semibold text-sm transition-colors ${scholarship.deadlinePassed
@@ -165,14 +177,16 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
                 }`}
             >
               Apply Now
-            </button>
-            <button
-              onClick={() => onViewDetails?.(scholarship.id)}
+            </button> */}
+            <a
+              href={scholarship.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full flex items-center justify-center gap-1.5 py-2 px-3 border border-gray-300 text-primary-darkest font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors"
             >
               <ExternalLink size={14} />
               View Details
-            </button>
+            </a>
           </div>
         </div>
       </div>
