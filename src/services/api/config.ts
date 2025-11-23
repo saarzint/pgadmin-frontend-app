@@ -20,4 +20,11 @@ export const API_ENDPOINTS = {
     SEARCH: '/search_scholarships',
     RESULTS: (userProfileId: number) => `/results/scholarships/${userProfileId}`,
   },
+  // Visa Agent
+  VISA: {
+    INFO: '/visa_info',
+    REPORT: (citizenship: string, destination: string) => `/visa_report/${citizenship}/${destination}`,
+    ALERTS: '/visa_alerts',
+    MARK_ALERTS: '/visa_alerts/mark_sent',
+  },
 } as const;

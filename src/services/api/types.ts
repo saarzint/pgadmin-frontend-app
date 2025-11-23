@@ -148,3 +148,121 @@ export interface ScholarshipResultsResponse {
   filters_applied: FiltersApplied;
   disclaimer: string;
 }
+
+// Visa Agent Types
+export interface VisaInfoRequest {
+  user_profile_id: number;
+  citizenship: string;
+  destination: string;
+  refresh?: boolean;
+}
+
+export interface VisaChange {
+  field: string;
+  new_value: string | string[];
+  old_value: string | string[];
+  change_type: string;
+}
+
+export interface VisaChangeSummary {
+  is_new: boolean;
+  alert_needed: boolean;
+  changes: VisaChange[];
+  has_changes?: boolean;
+  previous_version_id?: number;
+}
+
+export interface VisaInfoResult {
+  id: number;
+  user_profile_id: number;
+  citizenship_country: string;
+  destination_country: string;
+  visa_type: string;
+  documents: string[];
+  process_steps: string[];
+  fees: string;
+  timelines: string;
+  interview: boolean;
+  post_graduation: string[];
+  source_url: string;
+  disclaimer: string;
+  notes: string;
+  fetched_at: string;
+  last_updated: string;
+  alert_sent: boolean;
+  change_summary: VisaChangeSummary;
+}
+
+export interface VisaInfoResponse {
+  citizenship: string;
+  destination: string;
+  count: number;
+  agent_refresh_attempted: boolean;
+  results: VisaInfoResult[];
+}
+
+// Visa Report Types
+export interface VisaChecklistItem {
+  item: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'completed';
+}
+
+export interface VisaChecklistCategory {
+  category: string;
+  items: VisaChecklistItem[];
+}
+
+export interface VisaReportResponse {
+  title: string;
+  visa_type: string;
+  citizenship: string;
+  destination: string;
+  checklist: VisaChecklistCategory[];
+  fees: string;
+  timeline: string;
+  source_url: string;
+  last_updated: string;
+  disclaimer: string;
+  notes: string;
+  post_graduation_options: string[];
+  special_conditions: string[];
+}
+
+// Visa Alerts Types
+export interface VisaAlertChange {
+  change_type: string;
+  field: string;
+  new_value: string | string[] | boolean | null;
+  old_value: string | string[] | boolean | null;
+}
+
+export interface VisaAlert {
+  id: number;
+  citizenship: string;
+  destination: string;
+  visa_type: string;
+  last_updated: string;
+  source_url: string;
+  changes: VisaAlertChange[];
+  is_new: boolean;
+  alert_message: string;
+}
+
+export interface VisaAlertsResponse {
+  user_profile_id: number;
+  alerts_count: number;
+  alerts: VisaAlert[];
+  message: string;
+}
+
+export interface MarkAlertsRequest {
+  user_profile_id: number;
+  alert_ids?: number[];
+}
+
+export interface MarkAlertsResponse {
+  message: string;
+  user_profile_id: number;
+  updated_count: number;
+}

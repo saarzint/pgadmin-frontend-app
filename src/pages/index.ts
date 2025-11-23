@@ -6,3 +6,4 @@ export { Profile } from './Profile';
 export { AdditionalResources } from './AdditionalResources';
 export { EssayCenter } from './EssayCenter';
 export { VisaCenter } from './VisaCenter';
+export { VisaAgent } from './VisaAgent';

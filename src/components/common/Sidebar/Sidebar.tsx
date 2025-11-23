@@ -13,7 +13,8 @@ import {
   Building2,
   User,
   LayoutGrid,
-  BookOpenText
+  BookOpenText,
+  Globe
 } from 'lucide-react';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
@@ -89,6 +90,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       icon: <Plane size={18} />,
       path: '/visa',
       isActive: activeItem === 'visa',
+    },
+    {
+      id: 'visa-agent',
+      label: 'Visa Agent',
+      icon: <Globe size={18} />,
+      path: '/visa-agent',
+      isActive: activeItem === 'visa-agent',
     },
     {
       id: 'resources',

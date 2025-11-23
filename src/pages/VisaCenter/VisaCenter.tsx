@@ -1,10 +1,19 @@
-import { useState } from 'react';
-import { CheckCircle, Circle, Calendar, FileText, MessageSquare, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CheckCircle, Circle, FileText, MessageSquare, Clock, AlertCircle, Bell, ExternalLink, X } from 'lucide-react';
+import { visaAgentService } from '../../services/api';
+import { ErrorHandler } from '../../utils/errorHandler';
+import type { VisaReportResponse, VisaAlert } from '../../services/api/types';
 
 interface ChecklistItem {
   id: string;
   label: string;
   completed: boolean;
+  priority?: 'high' | 'medium' | 'low';
+}
+
+interface ChecklistCategory {
+  category: string;
+  items: ChecklistItem[];
 }
 
 interface VisaUpdate {
@@ -17,42 +26,95 @@ interface VisaUpdate {
 }
 
 const VisaCenter = () => {
-  // Country Visa Checklist
-  const [countryVisas, setCountryVisas] = useState<ChecklistItem[]>([
-    { id: '1', label: 'United States (F-1 Student Visa)', completed: false },
-    { id: '2', label: 'United Kingdom (Tier 4 Student Visa)', completed: false },
-    { id: '3', label: 'Canada (Study Permit)', completed: false },
-    { id: '4', label: 'Australia (Student Visa Subclass 500)', completed: false },
-    { id: '5', label: 'Germany (Student Visa)', completed: false },
-    { id: '6', label: 'France (Long-stay Student Visa)', completed: false },
-  ]);
+  // Loading state
+  const [loading, setLoading] = useState<boolean>(false);
+  const [visaReport, setVisaReport] = useState<VisaReportResponse | null>(null);
 
-  // Important Documents Checklist
-  const [documents, setDocuments] = useState<ChecklistItem[]>([
-    { id: '1', label: 'Valid Passport (minimum 6 months validity)', completed: false },
-    { id: '2', label: 'University Acceptance Letter (I-20/Offer Letter)', completed: false },
-    { id: '3', label: 'Visa Application Form (DS-160/equivalent)', completed: false },
-    { id: '4', label: 'Passport-sized Photographs', completed: false },
-    { id: '5', label: 'Financial Documents (Bank Statements)', completed: false },
-    { id: '6', label: 'Proof of English Proficiency (TOEFL/IELTS)', completed: false },
-    { id: '7', label: 'Academic Transcripts and Certificates', completed: false },
-    { id: '8', label: 'SEVIS Fee Receipt (for US)', completed: false },
-    { id: '9', label: 'Visa Application Fee Receipt', completed: false },
-    { id: '10', label: 'Travel Insurance', completed: false },
-  ]);
+  // Checklists by category - populated from API
+  const [checklistCategories, setChecklistCategories] = useState<ChecklistCategory[]>([]);
 
-  // Interview Process Checklist
-  const [interviewSteps, setInterviewSteps] = useState<ChecklistItem[]>([
-    { id: '1', label: 'Schedule visa interview appointment', completed: false },
-    { id: '2', label: 'Prepare all required documents', completed: false },
-    { id: '3', label: 'Practice common interview questions', completed: false },
-    { id: '4', label: 'Research your university and program', completed: false },
-    { id: '5', label: 'Prepare financial evidence explanation', completed: false },
-    { id: '6', label: 'Plan your travel to embassy/consulate', completed: false },
-    { id: '7', label: 'Dress professionally for interview', completed: false },
-    { id: '8', label: 'Arrive 15 minutes early', completed: false },
-    { id: '9', label: 'Follow up on visa status', completed: false },
-  ]);
+  // Visa alerts state
+  const [alerts, setAlerts] = useState<VisaAlert[]>([]);
+  const [alertsLoading, setAlertsLoading] = useState<boolean>(false);
+
+  // Fetch visa report from API
+  const fetchVisaReport = async (citizenship: string, destination: string, userProfileId: number) => {
+    setLoading(true);
+    try {
+      const response = await visaAgentService.getVisaReport(citizenship, destination, userProfileId);
+      setVisaReport(response);
+
+      // Transform checklist categories from API response
+      if (response.checklist && response.checklist.length > 0) {
+        const categories: ChecklistCategory[] = response.checklist.map((category) => ({
+          category: category.category,
+          items: category.items.map((item, index) => ({
+            id: `${category.category}-${index + 1}`,
+            label: item.item,
+            completed: item.status === 'completed',
+            priority: item.priority,
+          })),
+        }));
+        setChecklistCategories(categories);
+      }
+
+      console.log('Visa Report loaded:', response);
+    } catch (err) {
+      console.error('Error fetching visa report:', err);
+      ErrorHandler.log(err, 'VisaCenter - Fetch Report');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch visa alerts from API
+  const fetchVisaAlerts = async (userProfileId: number) => {
+    setAlertsLoading(true);
+    try {
+      const response = await visaAgentService.getVisaAlerts(userProfileId);
+      setAlerts(response.alerts);
+      console.log('Visa Alerts loaded:', response);
+    } catch (err) {
+      console.error('Error fetching visa alerts:', err);
+      ErrorHandler.log(err, 'VisaCenter - Fetch Alerts');
+    } finally {
+      setAlertsLoading(false);
+    }
+  };
+
+  // Mark alert as acknowledged
+  const handleDismissAlert = async (alertId: number) => {
+    try {
+      await visaAgentService.markAlertsSent({
+        user_profile_id: 1,
+        alert_ids: [alertId],
+      });
+      // Remove the alert from local state
+      setAlerts(alerts.filter(alert => alert.id !== alertId));
+    } catch (err) {
+      console.error('Error dismissing alert:', err);
+      ErrorHandler.log(err, 'VisaCenter - Dismiss Alert');
+    }
+  };
+
+  // Mark all alerts as acknowledged
+  const handleDismissAllAlerts = async () => {
+    try {
+      await visaAgentService.markAlertsSent({
+        user_profile_id: 1,
+      });
+      setAlerts([]);
+    } catch (err) {
+      console.error('Error dismissing all alerts:', err);
+      ErrorHandler.log(err, 'VisaCenter - Dismiss All Alerts');
+    }
+  };
+
+  // Load visa report and alerts on component mount
+  useEffect(() => {
+    fetchVisaReport('Pakistani', 'Germany', 1);
+    fetchVisaAlerts(1);
+  }, []);
 
   // Visa Updates and Deadlines
   const [visaUpdates, setVisaUpdates] = useState<VisaUpdate[]>([
@@ -82,14 +144,6 @@ const VisaCenter = () => {
     },
   ]);
 
-  const toggleChecklistItem = (
-    list: ChecklistItem[],
-    setList: React.Dispatch<React.SetStateAction<ChecklistItem[]>>,
-    id: string
-  ) => {
-    setList(list.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item)));
-  };
-
   const getStatusColor = (status: VisaUpdate['status']) => {
     switch (status) {
       case 'Pending':
@@ -107,73 +161,6 @@ const VisaCenter = () => {
     }
   };
 
-  const ChecklistSection = ({
-    title,
-    icon: Icon,
-    items,
-    setItems,
-  }: {
-    title: string;
-    icon: React.ElementType;
-    items: ChecklistItem[];
-    setItems: React.Dispatch<React.SetStateAction<ChecklistItem[]>>;
-  }) => {
-    const completedCount = items.filter((item) => item.completed).length;
-    const totalCount = items.length;
-    const progressPercentage = (completedCount / totalCount) * 100;
-
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-primary-light rounded-lg">
-            <Icon className="w-6 h-6 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-            <p className="text-sm text-gray-600">
-              {completedCount} of {totalCount} completed
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">{Math.round(progressPercentage)}%</div>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-4 bg-gray-200 rounded-full h-2 overflow-hidden">
-          <div
-            className="bg-primary h-full transition-all duration-300"
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
-
-        {/* Checklist Items */}
-        <div className="space-y-2">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => toggleChecklistItem(items, setItems, item.id)}
-              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
-            >
-              {item.completed ? (
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-              ) : (
-                <Circle className="w-5 h-5 text-gray-400 flex-shrink-0" />
-              )}
-              <span
-                className={`flex-1 ${
-                  item.completed ? 'text-gray-500 line-through' : 'text-gray-700'
-                }`}
-              >
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-white py-4">
       <div className="w-full px-6">
@@ -187,30 +174,264 @@ const VisaCenter = () => {
           </p>
         </div>
 
-        {/* Checklist Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <ChecklistSection
-            title="Country Visa Checklist"
-            icon={Calendar}
-            items={countryVisas}
-            setItems={setCountryVisas}
-          />
-          <ChecklistSection
-            title="Important Documents"
-            icon={FileText}
-            items={documents}
-            setItems={setDocuments}
-          />
-        </div>
+        {/* Visa Policy Alerts Section */}
+        {alerts.length > 0 && (
+          <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Bell className="w-5 h-5 text-yellow-600" />
+                <h3 className="font-semibold text-yellow-800">
+                  Visa Policy Alerts ({alerts.length})
+                </h3>
+              </div>
+              <button
+                onClick={handleDismissAllAlerts}
+                className="text-xs text-yellow-700 hover:text-yellow-900 underline"
+              >
+                Dismiss All
+              </button>
+            </div>
+            <div className="space-y-3">
+              {alerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className="bg-white rounded-lg border border-yellow-200 p-3"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-gray-800">
+                          {alert.citizenship} → {alert.destination}
+                        </span>
+                        {alert.is_new && (
+                          <span className="px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded">
+                            New
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2">{alert.alert_message}</p>
+                      {alert.changes && alert.changes.length > 0 && (
+                        <ul className="space-y-1 mb-2">
+                          {alert.changes.slice(0, 3).map((change, index) => (
+                            <li key={index} className="text-xs text-gray-600 flex items-start gap-1">
+                              <span className="text-yellow-600">•</span>
+                              <span className="capitalize">{change.field.replace(/_/g, ' ')}</span>
+                              <span className="text-gray-400">({change.change_type})</span>
+                            </li>
+                          ))}
+                          {alert.changes.length > 3 && (
+                            <li className="text-xs text-gray-500">
+                              +{alert.changes.length - 3} more changes
+                            </li>
+                          )}
+                        </ul>
+                      )}
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span>{alert.visa_type}</span>
+                        <span>•</span>
+                        <span>
+                          Updated: {new Date(alert.last_updated).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                        {alert.source_url && (
+                          <>
+                            <span>•</span>
+                            <a
+                              href={alert.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline flex items-center gap-1"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Source
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDismissAlert(alert.id)}
+                      className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Dismiss alert"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <div className="mb-6">
-          <ChecklistSection
-            title="Interview Process"
-            icon={MessageSquare}
-            items={interviewSteps}
-            setItems={setInterviewSteps}
-          />
-        </div>
+        {/* Alerts Loading Indicator */}
+        {alertsLoading && (
+          <div className="flex items-center gap-2 mb-4 text-gray-600">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+            <span className="text-sm">Loading alerts...</span>
+          </div>
+        )}
+
+        {/* Loading Indicator */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+            <span className="ml-3 mt-3 text-gray-600">Loading visa checklist...</span>
+          </div>
+        )}
+
+        {/* Visa Info Summary */}
+        {visaReport && (
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-primary-light rounded-lg">
+                <AlertCircle className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  {visaReport.visa_type}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {visaReport.citizenship} → {visaReport.destination}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-500 mb-1">Fees</p>
+                <p className="text-sm font-semibold text-gray-800">{visaReport.fees}</p>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-500 mb-1">Processing Time</p>
+                <p className="text-sm font-semibold text-gray-800">{visaReport.timeline}</p>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-500 mb-1">Interview</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  {visaReport.special_conditions?.includes('Interview required') ? 'Required' : 'Not Required'}
+                </p>
+              </div>
+            </div>
+
+            {/* Special Conditions */}
+            {visaReport.special_conditions && visaReport.special_conditions.length > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">Special Conditions:</p>
+                <ul className="space-y-1">
+                  {visaReport.special_conditions.map((condition, index) => (
+                    <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      {condition}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Post Graduation Options */}
+            {visaReport.post_graduation_options && visaReport.post_graduation_options.length > 0 && (
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">Post-Graduation Options:</p>
+                <ul className="space-y-1">
+                  {visaReport.post_graduation_options.map((option, index) => (
+                    <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      {option}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Source Link */}
+            {visaReport.source_url && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <a
+                  href={visaReport.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  View Official Source →
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Checklist Sections */}
+        {checklistCategories.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {checklistCategories.map((category, index) => (
+              <div key={index} className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-primary-light rounded-lg">
+                    {category.category.toLowerCase().includes('document') ? (
+                      <FileText className="w-6 h-6 text-primary" />
+                    ) : (
+                      <MessageSquare className="w-6 h-6 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold text-gray-800">{category.category}</h2>
+                    <p className="text-sm text-gray-600">
+                      {category.items.filter(item => item.completed).length} of {category.items.length} completed
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-primary">
+                      {Math.round((category.items.filter(item => item.completed).length / category.items.length) * 100)}%
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mb-4 bg-gray-200 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-primary h-full transition-all duration-300"
+                    style={{ width: `${(category.items.filter(item => item.completed).length / category.items.length) * 100}%` }}
+                  />
+                </div>
+
+                {/* Checklist Items */}
+                <div className="space-y-2">
+                  {category.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    >
+                      {item.completed ? (
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <span
+                          className={`${
+                            item.completed ? 'text-gray-500 line-through' : 'text-gray-700'
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                        {item.priority && (
+                          <span className={`ml-2 text-xs ${
+                            item.priority === 'high' ? 'text-red-500' :
+                            item.priority === 'medium' ? 'text-yellow-600' : 'text-gray-500'
+                          }`}>
+                            ({item.priority})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Visa Updates and Deadlines Table */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
