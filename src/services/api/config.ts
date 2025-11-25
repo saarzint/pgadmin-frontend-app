@@ -27,4 +27,9 @@ export const API_ENDPOINTS = {
     ALERTS: '/visa_alerts',
     MARK_ALERTS: '/visa_alerts/mark_sent',
   },
+  // Application Requirements
+  APPLICATION_REQUIREMENTS: {
+    FETCH: '/fetch_application_requirements',
+    GET: (university: string, program: string) => `/application_requirements/${university}/${program}`,
+  },
 } as const;

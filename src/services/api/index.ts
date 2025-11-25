@@ -7,5 +7,6 @@ export { apiClient } from './client';
 export { universityService } from './universityService';
 export { scholarshipService } from './scholarshipService';
 export { visaAgentService } from './visaAgentService';
+export { applicationRequirementsService } from './applicationRequirementsService';
 export { API_CONFIG, API_ENDPOINTS } from './config';
 export * from './types';

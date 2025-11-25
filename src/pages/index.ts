@@ -7,3 +7,5 @@ export { AdditionalResources } from './AdditionalResources';
 export { EssayCenter } from './EssayCenter';
 export { VisaCenter } from './VisaCenter';
 export { VisaAgent } from './VisaAgent';
+export { VisaAlerts } from './VisaAlerts';
+export { ApplicationRequirements } from './ApplicationRequirements';

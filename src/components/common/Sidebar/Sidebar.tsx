@@ -14,18 +14,30 @@ import {
   User,
   LayoutGrid,
   BookOpenText,
-  Globe
+  Globe,
+  Bell,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
 import aiAssistantIcon from '../../../assets/icons/ai-assistant.svg';
 
-interface MenuItem {
+interface SubMenuItem {
   id: string;
   label: string;
   icon: React.ReactNode;
   path: string;
   isActive?: boolean;
+}
+
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path?: string;
+  isActive?: boolean;
+  subItems?: SubMenuItem[];
 }
 
 interface SidebarProps {
@@ -34,6 +46,16 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['visa']); // 'visa' expanded by default
+
+  const toggleMenu = (menuId: string) => {
+    setExpandedMenus(prev =>
+      prev.includes(menuId)
+        ? prev.filter(id => id !== menuId)
+        : [...prev, menuId]
+    );
+  };
+
   const menuItems: MenuItem[] = [
     {
       id: 'dashboard',
@@ -71,11 +93,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       isActive: activeItem === 'universities',
     },
     {
-      id: 'applications',
+      id: 'application-requirements',
       label: 'Applications & Admissions',
       icon: <FileText size={18} />,
-      path: '/applications',
-      isActive: activeItem === 'applications',
+      path: '/application-requirements',
+      isActive: activeItem === 'application-requirements',
     },
     {
       id: 'scholarships',
@@ -86,17 +108,32 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
     },
     {
       id: 'visa',
-      label: 'Visa & Pre-Departure',
+      label: 'Visa',
       icon: <Plane size={18} />,
-      path: '/visa',
-      isActive: activeItem === 'visa',
-    },
-    {
-      id: 'visa-agent',
-      label: 'Visa Agent',
-      icon: <Globe size={18} />,
-      path: '/visa-agent',
-      isActive: activeItem === 'visa-agent',
+      isActive: ['visa-agent', 'visa-center', 'visa-alerts'].includes(activeItem),
+      subItems: [
+        {
+          id: 'visa-agent',
+          label: 'Visa Agent',
+          icon: <Globe size={16} />,
+          path: '/visa-agent',
+          isActive: activeItem === 'visa-agent',
+        },
+        {
+          id: 'visa-center',
+          label: 'Visa Center',
+          icon: <FileText size={16} />,
+          path: '/visa-center',
+          isActive: activeItem === 'visa-center',
+        },
+        {
+          id: 'visa-alerts',
+          label: 'Visa Alerts',
+          icon: <Bell size={16} />,
+          path: '/visa-alerts',
+          isActive: activeItem === 'visa-alerts',
+        },
+      ],
     },
     {
       id: 'resources',
@@ -157,22 +194,80 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
         <ul className="space-y-1">
           {menuItems.map((item) => (
             <li key={item.id}>
-              <Link
-                to={item.path}
-                className={`
-                  w-full flex items-center rounded-lg text-sm
-                  transition-all duration-200
-                  ${isCollapsed ? 'justify-center px-2 py-2' : 'gap-2.5 px-3 py-2'}
-                  ${item.isActive
-                    ? 'bg-primary-lightest text-primary-dark font-semibold'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }
-                `}
-                title={isCollapsed ? item.label : undefined}
-              >
-                <span className="flex-shrink-0">{item.icon}</span>
-                {!isCollapsed && <span className="text-left">{item.label}</span>}
-              </Link>
+              {item.subItems ? (
+                // Menu item with submenu
+                <div>
+                  <button
+                    onClick={() => toggleMenu(item.id)}
+                    className={`
+                      w-full flex items-center rounded-lg text-sm
+                      transition-all duration-200
+                      ${isCollapsed ? 'justify-center px-2 py-2' : 'gap-2.5 px-3 py-2 justify-between'}
+                      ${item.isActive
+                        ? 'bg-primary-lightest text-primary-dark font-semibold'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }
+                    `}
+                    title={isCollapsed ? item.label : undefined}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex-shrink-0">{item.icon}</span>
+                      {!isCollapsed && <span className="text-left">{item.label}</span>}
+                    </div>
+                    {!isCollapsed && (
+                      <span className="flex-shrink-0">
+                        {expandedMenus.includes(item.id) ? (
+                          <ChevronUp size={16} />
+                        ) : (
+                          <ChevronDown size={16} />
+                        )}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Submenu items */}
+                  {!isCollapsed && expandedMenus.includes(item.id) && (
+                    <ul className="mt-1 ml-4 space-y-1">
+                      {item.subItems.map((subItem) => (
+                        <li key={subItem.id}>
+                          <Link
+                            to={subItem.path}
+                            className={`
+                              w-full flex items-center rounded-lg text-sm
+                              transition-all duration-200 gap-2.5 px-3 py-2
+                              ${subItem.isActive
+                                ? 'bg-primary-lightest text-primary-dark font-semibold'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              }
+                            `}
+                          >
+                            <span className="flex-shrink-0">{subItem.icon}</span>
+                            <span className="text-left">{subItem.label}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                // Regular menu item
+                <Link
+                  to={item.path!}
+                  className={`
+                    w-full flex items-center rounded-lg text-sm
+                    transition-all duration-200
+                    ${isCollapsed ? 'justify-center px-2 py-2' : 'gap-2.5 px-3 py-2'}
+                    ${item.isActive
+                      ? 'bg-primary-lightest text-primary-dark font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }
+                  `}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <span className="flex-shrink-0">{item.icon}</span>
+                  {!isCollapsed && <span className="text-left">{item.label}</span>}
+                </Link>
+              )}
             </li>
           ))}
         </ul>

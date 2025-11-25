@@ -1,6 +1,6 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
-import { Dashboard, AIChat, Scholarships, Universities, Profile, AdditionalResources, EssayCenter, VisaCenter, VisaAgent } from './pages';
+import { Dashboard, AIChat, Scholarships, Universities, Profile, AdditionalResources, EssayCenter, VisaCenter, VisaAgent, VisaAlerts, ApplicationRequirements } from './pages';
 import { Sidebar } from './components';
 
 function App() {
@@ -25,8 +25,10 @@ function App() {
           <Route path="/resources" element={<AdditionalResources />} />
           <Route path="/ai-chat" element={<AIChat />} />
           <Route path="/essay-center" element={<EssayCenter />} />
-          <Route path="/visa" element={<VisaCenter />} />
           <Route path="/visa-agent" element={<VisaAgent />} />
+          <Route path="/visa-center" element={<VisaCenter />} />
+          <Route path="/visa-alerts" element={<VisaAlerts />} />
+          <Route path="/application-requirements" element={<ApplicationRequirements />} />
         </Routes>
       </main>
     </div>

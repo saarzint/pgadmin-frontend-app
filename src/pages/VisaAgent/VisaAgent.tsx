@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Header, VisaAgentList } from '../../components/VisaAgent';
+import { RefreshCw } from 'lucide-react';
+import { VisaAgentList } from '../../components/VisaAgent';
 import { VisaAgentData } from '../../components/VisaAgent/VisaAgentCard/VisaAgentCard';
 import { visaAgentService } from '../../services/api';
 import { ErrorHandler } from '../../utils/errorHandler';
@@ -59,26 +60,28 @@ const VisaAgent: React.FC = () => {
   };
 
   // Fetch visa information
-  const fetchVisaInfo = async (userProfileId: number, citizenship: string, destination: string) => {
+  const fetchVisaInfo = async (userProfileId: number, citizenship: string, destination: string, refresh: boolean = false) => {
     setLoading(true);
-    setLoadingProgress('Retrieving visa information...');
+    setLoadingProgress(refresh ? 'Refreshing visa information from source...' : 'Retrieving visa information...');
 
     try {
       console.log('=== Starting Visa Info Retrieval ===');
       console.log('User Profile ID:', userProfileId);
       console.log('Citizenship:', citizenship);
       console.log('Destination:', destination);
+      console.log('Refresh:', refresh);
 
-      setLoadingProgress('Fetching visa requirements...');
+      setLoadingProgress(refresh ? 'Fetching latest visa requirements...' : 'Fetching visa requirements...');
       const response = await visaAgentService.getVisaInfo({
         user_profile_id: userProfileId,
         citizenship: citizenship,
         destination: destination,
-        refresh: true,
+        refresh: refresh,
       });
 
       console.log('Visa Info Response:', response);
       console.log('Total Results:', response.count);
+      console.log('Agent Refresh Attempted:', response.agent_refresh_attempted);
       console.log('=== Visa Info Retrieval Complete ===');
 
       // Transform and set the visa data
@@ -95,6 +98,11 @@ const VisaAgent: React.FC = () => {
     }
   };
 
+  // Handle refresh button click
+  const handleRefresh = () => {
+    fetchVisaInfo(1, 'Pakistani', 'Germany', true);
+  };
+
   // Load visa info on component mount
   useEffect(() => {
     // Default values - can be made dynamic later with form inputs
@@ -104,8 +112,35 @@ const VisaAgent: React.FC = () => {
   return (
     <div className="min-h-screen bg-white py-4">
       <div className="w-full px-6">
-        {/* Header */}
-        <Header />
+        {/* Header with Refresh Button */}
+        <div className="mb-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-primary-darkest mb-1">
+                Visa Agent
+              </h1>
+              <p className="text-neutral-gray text-sm md:text-base">
+                Get comprehensive visa information and requirements for your destination
+              </p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
+                transition-all duration-200
+                ${loading
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg'
+                }
+              `}
+              title="Refresh visa information from source"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+            </button>
+          </div>
+        </div>
 
         {/* Loading Indicator */}
         {loading && (

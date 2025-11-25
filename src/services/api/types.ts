@@ -266,3 +266,112 @@ export interface MarkAlertsResponse {
   user_profile_id: number;
   updated_count: number;
 }
+
+// Application Requirements Types
+export interface FetchApplicationRequirementsRequest {
+  user_profile_id: number;
+  university: string;
+  program: string;
+}
+
+export interface ApplicationDeadlines {
+  regular_decision?: string | null;
+  early_action?: string | null;
+  early_decision?: string | null;
+  priority?: string | null;
+  rolling?: boolean;
+}
+
+export interface ApplicationDocument {
+  name: string;
+  required: boolean;
+  details?: string | null;
+}
+
+export interface ApplicationPortfolio {
+  required: boolean;
+  details?: string | null;
+}
+
+export interface ApplicationInterview {
+  required: boolean;
+  policy?: string;
+}
+
+export interface ApplicationFeeInfo {
+  amount?: string | null;
+  currency?: string;
+  waiver_available?: boolean;
+  waiver_details?: string | null;
+}
+
+export interface ApplicationTestPolicy {
+  type?: string;
+  details?: string | null;
+}
+
+export interface ApplicationEssayPrompt {
+  type?: string;
+  prompt: string;
+  word_limit?: number | null;
+}
+
+export interface ApplicationLabels {
+  rolling_admission?: boolean;
+  test_label?: string;
+}
+
+export interface ApplicationRequirements {
+  university: string;
+  program: string;
+  application_platform?: string;
+  deadlines?: ApplicationDeadlines;
+  required_documents?: ApplicationDocument[];
+  essay_prompts?: ApplicationEssayPrompt[];
+  portfolio?: ApplicationPortfolio;
+  interview?: ApplicationInterview;
+  fee_info?: ApplicationFeeInfo;
+  test_policy?: ApplicationTestPolicy;
+  source_url?: string;
+  fetched_at?: string;
+  is_ambiguous?: boolean;
+  ambiguity_details?: string;
+  labels?: ApplicationLabels;
+}
+
+export interface ApplicationRequirementsData {
+  id: number;
+  user_profile_id: number;
+  university: string;
+  program: string;
+  application_platform?: string;
+  deadlines?: ApplicationDeadlines;
+  required_documents?: ApplicationDocument[];
+  essay_prompts?: ApplicationEssayPrompt[];
+  portfolio?: ApplicationPortfolio;
+  interview?: ApplicationInterview;
+  fee_info?: ApplicationFeeInfo;
+  test_policy?: ApplicationTestPolicy;
+  source_url?: string;
+  fetched_at: string;
+  is_ambiguous?: boolean;
+  ambiguity_details?: string;
+  reviewed_by?: string | null;
+}
+
+export interface FetchApplicationRequirementsResponse {
+  message: string;
+  user_profile_id: number;
+  search_type: string;
+  formatted_json: ApplicationRequirements;
+  formatted_markdown: string;
+  disclaimer: string;
+}
+
+export interface GetApplicationRequirementsResponse {
+  user_profile_id: number;
+  university: string;
+  program: string;
+  requirements: ApplicationRequirementsData;
+  refreshed: boolean;
+}
