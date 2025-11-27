@@ -375,3 +375,105 @@ export interface GetApplicationRequirementsResponse {
   requirements: ApplicationRequirementsData;
   refreshed: boolean;
 }
+
+// Admissions Counselor Types
+export interface AdmissionsStressFlags {
+  incomplete_profile: boolean;
+  approaching_deadlines: boolean;
+  agent_conflicts: boolean;
+  missing_documents?: number;
+}
+
+export interface AdmissionsApproachingDeadline {
+  type: string;
+  name: string;
+  deadline: string;
+  days_left: number;
+}
+
+export interface AdmissionsNextStep {
+  action: string;
+  priority: 'high' | 'medium' | 'low' | 'High' | 'Medium' | 'Low';
+  deadline?: string;
+  due_date?: string;
+  agent?: string;
+  related_agent?: string;
+  category?: string;
+  estimated_time?: string;
+  dependencies?: string[];
+  reasoning?: string;
+}
+
+export interface AdmissionsOverview {
+  universities_found: number;
+  scholarships_found: number;
+  application_requirements: number;
+  visa_info_count: number;
+  profile_name: string;
+}
+
+export interface AdmissionsSummaryResponse {
+  current_stage: string;
+  progress_score: number;
+  active_agents: string[];
+  stress_flags: AdmissionsStressFlags;
+  next_steps: AdmissionsNextStep[];
+  overview: AdmissionsOverview;
+  advice: string;
+  last_updated?: string;
+  missing_profile_fields?: string[];
+  approaching_deadlines_details?: AdmissionsApproachingDeadline[];
+}
+
+export interface AdmissionsNextStepsResponse {
+  user_id: number;
+  next_steps: AdmissionsNextStep[];
+  total_count: number;
+  last_updated: string;
+}
+
+export interface AdmissionsUpdateStageRequest {
+  user_id: number;
+  current_stage?: string;
+  progress_score?: number;
+  stress_flags?: Partial<AdmissionsStressFlags>;
+  next_steps?: AdmissionsNextStep[];
+}
+
+export interface AdmissionsUpdateStageResponse {
+  message: string;
+  user_id: number;
+  updated_data?: {
+    id: number;
+    user_id: number;
+    current_stage: string;
+    progress_score: number;
+    stress_flags: AdmissionsStressFlags;
+    next_steps: AdmissionsNextStep[];
+    last_updated: string;
+  };
+  summary_data?: {
+    id: number;
+    user_id: number;
+    current_stage: string;
+    progress_score: number;
+    stress_flags: AdmissionsStressFlags;
+    next_steps: AdmissionsNextStep[];
+    last_updated: string;
+  };
+}
+
+export interface AdmissionsAgentReportRequest {
+  agent_name: string;
+  user_id: number;
+  payload: Record<string, unknown>;
+  timestamp?: string;
+}
+
+export interface AdmissionsAgentReportResponse {
+  message: string;
+  agent_name: string;
+  user_id: number;
+  conflict_detected: boolean;
+  report_id: number;
+}

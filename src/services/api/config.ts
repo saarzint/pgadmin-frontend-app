@@ -32,4 +32,11 @@ export const API_ENDPOINTS = {
     FETCH: '/fetch_application_requirements',
     GET: (university: string, program: string) => `/application_requirements/${university}/${program}`,
   },
+  // Admissions Counselor
+  ADMISSIONS: {
+    SUMMARY: (userId: number) => `/admissions/summary/${userId}`,
+    NEXT_STEPS: (userId: number) => `/admissions/next_steps/${userId}`,
+    UPDATE_STAGE: '/admissions/update_stage',
+    LOG_AGENT_REPORT: '/admissions/log_agent_report',
+  },
 } as const;

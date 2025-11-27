@@ -17,7 +17,8 @@ import {
   Globe,
   Bell,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  GraduationCap
 } from 'lucide-react';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
@@ -94,10 +95,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
     },
     {
       id: 'application-requirements',
-      label: 'Applications & Admissions',
+      label: 'Applications Requirements',
       icon: <FileText size={18} />,
       path: '/application-requirements',
       isActive: activeItem === 'application-requirements',
+    },
+    {
+      id: 'admissions-counselor',
+      label: 'Admissions Counselor',
+      icon: <GraduationCap size={18} />,
+      path: '/admissions-counselor',
+      isActive: activeItem === 'admissions-counselor',
     },
     {
       id: 'scholarships',
