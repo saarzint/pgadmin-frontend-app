@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Search } from 'lucide-react';
 import {
   Header,
   SummaryCard,
@@ -22,12 +23,13 @@ import type {
   AdmissionsApproachingDeadline,
 } from '../../services/api/types';
 
-const USER_ID = 1; // Default user ID
-
 const AdmissionsCounselor: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [searchInitiated, setSearchInitiated] = useState<boolean>(false);
+  // State for search input
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Summary data
   const [currentStage, setCurrentStage] = useState<string>('');
@@ -106,15 +108,19 @@ const AdmissionsCounselor: React.FC = () => {
     }
   };
 
+  // Handle start search
+  const handleStartSearch = () => {
+    console.log('Loading dashboard with query:', searchQuery || 'Default profile');
+    setSearchInitiated(true);
+    fetchSummary(1);
+  };
+
   // Handle refresh
   const handleRefresh = () => {
     fetchSummary(1);
   };
 
-  // Load data on component mount
-  useEffect(() => {
-    fetchSummary(1);
-  }, []);
+  const USER_ID = 1; // Default user ID for modals
 
   if (error) {
     return (
@@ -143,9 +149,43 @@ const AdmissionsCounselor: React.FC = () => {
         {/* Header */}
         <Header
           lastUpdated={lastUpdated}
-          onRefresh={handleRefresh}
+          onRefresh={searchInitiated ? handleRefresh : undefined}
           loading={loading}
         />
+
+        {/* Start Search Section - Shows when search hasn't been initiated */}
+        {!searchInitiated && !loading && (
+          <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 mt-6">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                Load Admissions Dashboard
+              </h2>
+              <p className="text-gray-600 max-w-md">
+                Enter your focus area or leave empty to load your complete admissions dashboard.
+              </p>
+            </div>
+            
+            {/* Search Input */}
+            <div className="w-full max-w-lg px-4 mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="e.g., Application deadlines, University recommendations..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 placeholder-gray-400"
+                onKeyDown={(e) => e.key === 'Enter' && handleStartSearch()}
+              />
+            </div>
+            
+            <button
+              onClick={handleStartSearch}
+              className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+            >
+              <Search className="w-5 h-5" />
+              <span>Load Dashboard</span>
+            </button>
+          </div>
+        )}
 
         {/* Loading Indicator */}
         {loading && (
@@ -158,7 +198,7 @@ const AdmissionsCounselor: React.FC = () => {
         )}
 
         {/* Dashboard Content */}
-        {!loading && (
+        {!loading && searchInitiated && (
           <div className="space-y-6">
             {/* Missing Profile Fields Alert */}
             {missingProfileFields.length > 0 && (

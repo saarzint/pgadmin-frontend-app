@@ -9,5 +9,6 @@ export { scholarshipService } from './scholarshipService';
 export { visaAgentService } from './visaAgentService';
 export { applicationRequirementsService } from './applicationRequirementsService';
 export { admissionsCounselorService } from './admissionsCounselorService';
+export { cerebrasEssayService } from './cerebrasEssayService';
 export { API_CONFIG, API_ENDPOINTS } from './config';
 export * from './types';

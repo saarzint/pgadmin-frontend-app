@@ -1,21 +1,7 @@
 import { useState } from 'react';
-import { X, CheckCircle, AlertCircle, Lightbulb, TrendingUp } from 'lucide-react';
-
-interface GeneratedIdea {
-  id: string;
-  text: string;
-}
-
-interface FeedbackItem {
-  id: string;
-  type: 'strength' | 'improvement' | 'suggestion' | 'insight';
-  text: string;
-}
-
-interface EssayFeedback {
-  overallScore: number;
-  items: FeedbackItem[];
-}
+import { X, CheckCircle, AlertCircle, Lightbulb, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
+import { cerebrasEssayService } from '../../services/api';
+import type { EssayFeedbackResponse, GeneratedIdea, EssayFeedbackItem } from '../../services/api/cerebrasEssayService';
 
 const EssayCenter = () => {
   const [topic, setTopic] = useState('');
@@ -24,12 +10,15 @@ const EssayCenter = () => {
   const [keyExperience, setKeyExperience] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [generatedIdeas, setGeneratedIdeas] = useState<GeneratedIdea[]>([]);
+  const [isGeneratingIdeas, setIsGeneratingIdeas] = useState(false);
+  const [ideaError, setIdeaError] = useState<string | null>(null);
 
   // Essay Feedback states
   const [essayText, setEssayText] = useState('');
   const [essayType, setEssayType] = useState('');
-  const [feedback, setFeedback] = useState<EssayFeedback | null>(null);
+  const [feedback, setFeedback] = useState<EssayFeedbackResponse | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   const availableTags = ['Leadership', 'Innovation', 'Community', 'Service', 'Creativity', 'Resilience'];
 
@@ -41,19 +30,27 @@ const EssayCenter = () => {
     }
   };
 
-  const handleGenerateIdeas = () => {
-    // Simulate AI-generated ideas
-    const ideas: GeneratedIdea[] = [
-      {
-        id: '1',
-        text: 'Overcoming challenges in robotics...',
-      },
-      {
-        id: '2',
-        text: 'Volunteering at the community center taught new skills...',
-      },
-    ];
-    setGeneratedIdeas(ideas);
+  const handleGenerateIdeas = async () => {
+    setIsGeneratingIdeas(true);
+    setIdeaError(null);
+    setGeneratedIdeas([]);
+
+    try {
+      const ideas = await cerebrasEssayService.generateEssayIdeas({
+        topic,
+        cogins1,
+        cogins2,
+        keyExperiences: keyExperience,
+        tags: selectedTags,
+      });
+      setGeneratedIdeas(ideas);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate ideas. Please try again.';
+      setIdeaError(errorMessage);
+      console.error('Error generating ideas:', error);
+    } finally {
+      setIsGeneratingIdeas(false);
+    }
   };
 
   const essayTypes = [
@@ -65,62 +62,24 @@ const EssayCenter = () => {
     'Diversity Essay',
   ];
 
-  const handleAnalyzeEssay = () => {
+  const handleAnalyzeEssay = async () => {
     setIsAnalyzing(true);
+    setAnalysisError(null);
+    setFeedback(null);
 
-    // Simulate AI analysis with a delay
-    setTimeout(() => {
-      const mockFeedback: EssayFeedback = {
-        overallScore: 85,
-        items: [
-          {
-            id: '1',
-            type: 'strength',
-            text: 'Strong opening hook that immediately engages the reader with vivid imagery and personal voice.',
-          },
-          {
-            id: '2',
-            type: 'strength',
-            text: 'Excellent use of specific examples and anecdotes that bring your experiences to life.',
-          },
-          {
-            id: '3',
-            type: 'improvement',
-            text: 'Consider strengthening the transition between paragraphs 2 and 3 for better flow.',
-          },
-          {
-            id: '4',
-            type: 'improvement',
-            text: 'The conclusion could be more impactful by explicitly connecting back to your growth journey.',
-          },
-          {
-            id: '5',
-            type: 'suggestion',
-            text: 'Try varying sentence structure in the third paragraph to create more dynamic rhythm.',
-          },
-          {
-            id: '6',
-            type: 'suggestion',
-            text: 'Consider adding more reflection on how this experience shaped your future goals.',
-          },
-          {
-            id: '7',
-            type: 'insight',
-            text: 'Your essay effectively demonstrates resilience and personal growth, key themes admissions officers value.',
-          },
-          {
-            id: '8',
-            type: 'insight',
-            text: 'The authentic voice throughout makes your essay memorable and distinct from others.',
-          },
-        ],
-      };
-      setFeedback(mockFeedback);
+    try {
+      const result = await cerebrasEssayService.analyzeEssay(essayText, essayType);
+      setFeedback(result);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to analyze essay. Please try again.';
+      setAnalysisError(errorMessage);
+      console.error('Error analyzing essay:', error);
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
+    }
   };
 
-  const getFeedbackIcon = (type: FeedbackItem['type']) => {
+  const getFeedbackIcon = (type: EssayFeedbackItem['type']) => {
     switch (type) {
       case 'strength':
         return <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />;
@@ -133,7 +92,7 @@ const EssayCenter = () => {
     }
   };
 
-  const getFeedbackLabel = (type: FeedbackItem['type']) => {
+  const getFeedbackLabel = (type: EssayFeedbackItem['type']) => {
     switch (type) {
       case 'strength':
         return 'Strength';
@@ -146,14 +105,27 @@ const EssayCenter = () => {
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 85) return 'text-green-600';
+    if (score >= 70) return 'text-primary';
+    if (score >= 50) return 'text-orange-500';
+    return 'text-red-500';
+  };
+
   return (
     <div className="min-h-screen bg-white py-4">
       <div className="w-full px-6">
         {/* Header */}
         <div className="mb-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary-darkest mb-1">
-            Essay Center
-          </h1>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-primary-darkest">
+              Essay Center
+            </h1>
+            <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-100 to-blue-100 px-3 py-1 rounded-full">
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <span className="text-xs font-semibold text-purple-700">Powered by Cerebras AI</span>
+            </div>
+          </div>
           <p className="text-neutral-gray text-sm md:text-base">
             Brainstorm, write, and perfect your college essays with AI assistance
           </p>
@@ -246,28 +218,66 @@ const EssayCenter = () => {
               {/* Generate Button */}
               <button
                 onClick={handleGenerateIdeas}
-                className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+                disabled={isGeneratingIdeas || (!topic && !keyExperience)}
+                className={`w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm flex items-center justify-center gap-2 ${
+                  isGeneratingIdeas || (!topic && !keyExperience)
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-primary hover:bg-primary-dark text-white hover:shadow-md'
+                }`}
               >
-                Generate Essay Ideas
+                {isGeneratingIdeas ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Generating Ideas...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Generate Essay Ideas
+                  </>
+                )}
               </button>
             </div>
+
+            {/* Error Message for Ideas */}
+            {ideaError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-red-800 font-medium">Error Generating Ideas</p>
+                    <p className="text-red-600 text-sm mt-1">{ideaError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Generated Ideas Section */}
             {generatedIdeas.length > 0 && (
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
-                  Generated Ideas
-                </h2>
-                <ol className="list-decimal list-inside space-y-3">
-                  {generatedIdeas.map((idea) => (
-                    <li
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                    Generated Ideas
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  {generatedIdeas.map((idea, index) => (
+                    <div
                       key={idea.id}
-                      className="text-gray-700 text-base leading-relaxed pl-2"
+                      className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100"
                     >
-                      {idea.text}
-                    </li>
+                      <div className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-7 h-7 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                          {index + 1}
+                        </span>
+                        <p className="text-gray-700 text-base leading-relaxed">
+                          {idea.text}
+                        </p>
+                      </div>
+                    </div>
                   ))}
-                </ol>
+                </div>
               </div>
             )}
           </div>
@@ -314,8 +324,9 @@ const EssayCenter = () => {
                   rows={12}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 resize-none font-mono text-sm"
                 />
-                <div className="mt-2 text-right text-sm text-gray-500">
-                  {essayText.length} characters
+                <div className="mt-2 flex justify-between text-sm text-gray-500">
+                  <span>{essayText.split(/\s+/).filter(w => w).length} words</span>
+                  <span>{essayText.length} characters</span>
                 </div>
               </div>
 
@@ -323,29 +334,69 @@ const EssayCenter = () => {
               <button
                 onClick={handleAnalyzeEssay}
                 disabled={!essayText.trim() || !essayType || isAnalyzing}
-                className={`w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm ${
+                className={`w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm flex items-center justify-center gap-2 ${
                   !essayText.trim() || !essayType || isAnalyzing
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-primary hover:bg-primary-dark text-white hover:shadow-md'
                 }`}
               >
-                {isAnalyzing ? 'Analyzing Your Essay...' : 'Get Instant Feedback'}
+                {isAnalyzing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Analyzing Your Essay...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Get Instant Feedback
+                  </>
+                )}
               </button>
             </div>
+
+            {/* Error Message for Analysis */}
+            {analysisError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-red-800 font-medium">Error Analyzing Essay</p>
+                    <p className="text-red-600 text-sm mt-1">{analysisError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Feedback Results Section */}
             {feedback && (
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                    Feedback Results
-                  </h2>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-600 font-medium">Overall Score:</span>
-                    <span className="text-3xl font-bold text-primary">
+                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                      AI Feedback Results
+                    </h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600 font-medium">Score:</span>
+                    <span className={`text-3xl font-bold ${getScoreColor(feedback.overallScore)}`}>
                       {feedback.overallScore}
                     </span>
                     <span className="text-gray-500">/100</span>
+                  </div>
+                </div>
+
+                {/* Score Visualization */}
+                <div className="mb-6">
+                  <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        feedback.overallScore >= 85 ? 'bg-green-500' :
+                        feedback.overallScore >= 70 ? 'bg-primary' :
+                        feedback.overallScore >= 50 ? 'bg-orange-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${feedback.overallScore}%` }}
+                    />
                   </div>
                 </div>
 

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { RefreshCw, Search } from 'lucide-react';
 import { VisaAgentList } from '../../components/VisaAgent';
 import { VisaAgentData } from '../../components/VisaAgent/VisaAgentCard/VisaAgentCard';
 import { visaAgentService } from '../../services/api';
@@ -98,16 +98,26 @@ const VisaAgent: React.FC = () => {
     }
   };
 
-  // Handle refresh button click
-  const handleRefresh = () => {
-    fetchVisaInfo(1, 'Pakistani', 'Germany', true);
+  // State to track if search has been initiated
+  const [searchInitiated, setSearchInitiated] = useState<boolean>(false);
+  // State for search inputs
+  const [citizenship, setCitizenship] = useState<string>('');
+  const [destination, setDestination] = useState<string>('');
+
+  // Handle start search button click
+  const handleStartSearch = () => {
+    const citizenshipValue = citizenship.trim() || 'Pakistani';
+    const destinationValue = destination.trim() || 'Germany';
+    setSearchInitiated(true);
+    fetchVisaInfo(1, citizenshipValue, destinationValue);
   };
 
-  // Load visa info on component mount
-  useEffect(() => {
-    // Default values - can be made dynamic later with form inputs
-    fetchVisaInfo(1, 'Pakistani', 'Germany');
-  }, []);
+  // Handle refresh button click
+  const handleRefresh = () => {
+    const citizenshipValue = citizenship.trim() || 'Pakistani';
+    const destinationValue = destination.trim() || 'Germany';
+    fetchVisaInfo(1, citizenshipValue, destinationValue, true);
+  };
 
   return (
     <div className="min-h-screen bg-white py-4">
@@ -123,24 +133,73 @@ const VisaAgent: React.FC = () => {
                 Get comprehensive visa information and requirements for your destination
               </p>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={loading}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
-                transition-all duration-200
-                ${loading
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg'
-                }
-              `}
-              title="Refresh visa information from source"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
-            </button>
+            {searchInitiated && (
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className={`
+                  flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
+                  transition-all duration-200
+                  ${loading
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg'
+                  }
+                `}
+                title="Refresh visa information from source"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Start Search Section - Shows when search hasn't been initiated */}
+        {!searchInitiated && !loading && (
+          <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 mt-6">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                Search for Visa Information
+              </h2>
+              <p className="text-gray-600 max-w-md">
+                Enter your citizenship and destination country to get comprehensive visa requirements.
+              </p>
+            </div>
+            
+            {/* Search Inputs */}
+            <div className="w-full max-w-lg px-4 mb-4 space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Your Citizenship</label>
+                <input
+                  type="text"
+                  value={citizenship}
+                  onChange={(e) => setCitizenship(e.target.value)}
+                  placeholder="e.g., Pakistani, Indian, Nigerian..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 placeholder-gray-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Destination Country</label>
+                <input
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  placeholder="e.g., Germany, USA, UK, Canada..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 placeholder-gray-400"
+                  onKeyDown={(e) => e.key === 'Enter' && handleStartSearch()}
+                />
+              </div>
+            </div>
+            
+            <button
+              onClick={handleStartSearch}
+              className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+            >
+              <Search className="w-5 h-5" />
+              <span>Start Visa Search</span>
+            </button>
+          </div>
+        )}
 
         {/* Loading Indicator */}
         {loading && (
@@ -152,15 +211,55 @@ const VisaAgent: React.FC = () => {
           </div>
         )}
 
+        {/* Search Again Section - Shows after search is done */}
+        {!loading && searchInitiated && (
+          <div className="flex flex-col sm:flex-row items-end gap-3 mt-6 p-4 bg-gray-50 rounded-lg">
+            <div className="flex-1 w-full sm:w-auto">
+              <label className="block text-xs font-medium text-gray-600 mb-1">Citizenship</label>
+              <input
+                type="text"
+                value={citizenship}
+                onChange={(e) => setCitizenship(e.target.value)}
+                placeholder="e.g., Pakistani"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 placeholder-gray-400 text-sm"
+              />
+            </div>
+            <div className="flex-1 w-full sm:w-auto">
+              <label className="block text-xs font-medium text-gray-600 mb-1">Destination</label>
+              <input
+                type="text"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                placeholder="e.g., Germany"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 placeholder-gray-400 text-sm"
+                onKeyDown={(e) => e.key === 'Enter' && handleStartSearch()}
+              />
+            </div>
+            <button
+              onClick={handleStartSearch}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
+            >
+              <Search className="w-4 h-4" />
+              <span>Search Again</span>
+            </button>
+          </div>
+        )}
+
         {/* Visa List */}
-        {!loading && visas.length > 0 && (
+        {!loading && searchInitiated && visas.length > 0 && (
           <VisaAgentList visas={visas} />
         )}
 
-        {/* No Results */}
-        {!loading && visas.length === 0 && (
+        {/* No Results - Only show after search has been initiated */}
+        {!loading && searchInitiated && visas.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-600">No visa information found. Try adjusting your search criteria.</p>
+            <p className="text-gray-600">No visa information found. Try different countries.</p>
+            <button
+              onClick={() => setSearchInitiated(false)}
+              className="mt-4 px-4 py-2 text-primary hover:underline"
+            >
+              ← Back to search
+            </button>
           </div>
         )}
       </div>
