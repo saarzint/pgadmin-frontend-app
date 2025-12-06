@@ -39,6 +39,7 @@ interface MenuItem {
   path?: string;
   isActive?: boolean;
   subItems?: SubMenuItem[];
+  onClick?: () => void;
 }
 
 interface SidebarProps {
@@ -257,8 +258,26 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
                     </ul>
                   )}
                 </div>
+              ) : item.onClick ? (
+                // Menu item with onClick handler (e.g., AI Chat)
+                <button
+                  onClick={item.onClick}
+                  className={`
+                    w-full flex items-center rounded-lg text-sm
+                    transition-all duration-200
+                    ${isCollapsed ? 'justify-center px-2 py-2' : 'gap-2.5 px-3 py-2'}
+                    ${item.isActive
+                      ? 'bg-primary-lightest text-primary-dark font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }
+                  `}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <span className="flex-shrink-0">{item.icon}</span>
+                  {!isCollapsed && <span className="text-left">{item.label}</span>}
+                </button>
               ) : (
-                // Regular menu item
+                // Regular menu item with path
                 <Link
                   to={item.path!}
                   className={`
@@ -281,7 +300,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
         </ul>
       </nav>
 
-      {/* AI Counselor Section */}
+      {/* AI Counselor Section - Commented out */}
+      {/*
       <div className={`p-3 ${isCollapsed ? 'flex justify-center' : ''}`}>
         {isCollapsed ? (
           <Link
@@ -296,20 +316,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
           </Link>
         ) : (
           <>
-            {/* AI Counselor Header */}
             <div className="flex items-center gap-1.5 mb-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center">
                 <img src={aiAssistantIcon} alt="AI Assistant" className="w-4 h-4" />
               </div>
               <h3 className="text-base font-bold text-primary-darkest">AI Counselor</h3>
             </div>
-
-            {/* Description */}
             <p className="text-xs text-gray-600 mb-2.5">
               Your personal study abroad guide
             </p>
-
-            {/* CTA Button */}
             <Link
               to="/ai-chat"
               className="w-full text-white font-semibold py-2 px-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg hover:shadow-xl hover:scale-[1.02] text-sm"
@@ -323,6 +338,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
           </>
         )}
       </div>
+      */}
     </aside>
   );
 };

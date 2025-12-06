@@ -18,6 +18,21 @@ const AIChat = () => {
         setMessage(question);
     };
 
+    // Open ElevenLabs voice chat widget
+    const handleVoiceChat = () => {
+        const widget = document.querySelector('elevenlabs-convai') as any;
+        if (widget) {
+            if (typeof widget.show === 'function') {
+                widget.show();
+            } else if (typeof widget.open === 'function') {
+                widget.open();
+            } else {
+                const widgetButton = widget.shadowRoot?.querySelector('button');
+                if (widgetButton) widgetButton.click();
+            }
+        }
+    };
+
     return (
         <>
             <div className="h-screen flex flex-col bg-white-50">
@@ -107,7 +122,12 @@ const AIChat = () => {
                                 </button>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                {/* Voice Chat Button - Opens ElevenLabs Widget */}
+                                <button 
+                                    onClick={handleVoiceChat}
+                                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                    title="Start Voice Chat"
+                                >
                                     <Mic size={20} />
                                 </button>
                                 <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
