@@ -5,4 +5,4 @@ export { Welcome, MetricsSummary, Applications, Recommendations, Deadlines, Scho
 export { Header, MetricCards, ScholarshipCard, ScholarshipsList } from './Scholarships';
 
 // Common Components
-export { Sidebar } from './common';
+export { Sidebar, ProtectedRoute } from './common';

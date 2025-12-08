@@ -1,20 +1,16 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './App.css';
-import { Dashboard, AIChat, Scholarships, Universities, Profile, AdditionalResources, EssayCenter, VisaCenter, VisaAgent, VisaAlerts, ApplicationRequirements, AdmissionsCounselor } from './pages';
-import { Sidebar } from './components';
+import { Dashboard, AIChat, Scholarships, Universities, Profile, AdditionalResources, EssayCenter, VisaCenter, VisaAgent, VisaAlerts, ApplicationRequirements, AdmissionsCounselor, Login, Register } from './pages';
+import { Sidebar, ProtectedRoute } from './components';
+import { useAuth } from './services/firebase';
 
-function App() {
+function AppLayout() {
   const location = useLocation();
-
-  // Extract the active page from the current path
   const activePage = location.pathname.replace('/', '') || 'dashboard';
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
       <Sidebar activeItem={activePage} />
-
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -33,6 +29,33 @@ function App() {
         </Routes>
       </main>
     </div>
+  );
+}
+
+function App() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-darkest via-primary-dark to-primary">
+        <div className="animate-spin w-12 h-12 border-4 border-white border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+      <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+      
+      {/* Protected Routes */}
+      <Route path="/*" element={
+        <ProtectedRoute>
+          <AppLayout />
+        </ProtectedRoute>
+      } />
+    </Routes>
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   Compass,
@@ -18,8 +18,10 @@ import {
   Bell,
   ChevronDown,
   ChevronUp,
-  GraduationCap
+  GraduationCap,
+  LogOut
 } from 'lucide-react';
+import { useAuth } from '../../../services/firebase';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
 import aiAssistantIcon from '../../../assets/icons/ai-assistant.svg';
@@ -49,6 +51,17 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['visa']); // 'visa' expanded by default
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   const toggleMenu = (menuId: string) => {
     setExpandedMenus(prev =>
@@ -199,7 +212,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 p-3 overflow-y-auto">
+      <nav className="flex-1 min-h-0 p-3 overflow-y-auto">
         <ul className="space-y-1">
           {menuItems.map((item) => (
             <li key={item.id}>
@@ -300,45 +313,48 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
         </ul>
       </nav>
 
-      {/* AI Counselor Section - Commented out */}
-      {/*
-      <div className={`p-3 ${isCollapsed ? 'flex justify-center' : ''}`}>
+      {/* User Section with Logout */}
+      <div className={`flex-shrink-0 p-3 border-t border-gray-200 ${isCollapsed ? 'flex flex-col items-center' : ''}`}>
         {isCollapsed ? (
-          <Link
-            to="/ai-chat"
-            className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-[1.05] transition-all duration-200"
-            style={{
-              background: 'linear-gradient(90deg, #EF6B5C 0%, #E8506A 100%)',
-            }}
-            title="Ask AI Assistant"
+          <button
+            onClick={handleLogout}
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-red-50 hover:bg-red-100 transition-colors"
+            title="Logout"
           >
-            <img src={aiAssistantIcon} alt="AI Assistant" className="w-4 h-4" />
-          </Link>
+            <LogOut size={18} className="text-red-600" />
+          </button>
         ) : (
           <>
-            <div className="flex items-center gap-1.5 mb-2">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center">
-                <img src={aiAssistantIcon} alt="AI Assistant" className="w-4 h-4" />
+            {/* User Info */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-primary-lightest flex items-center justify-center">
+                {user?.photoURL ? (
+                  <img src={user.photoURL} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <User size={20} className="text-primary-dark" />
+                )}
               </div>
-              <h3 className="text-base font-bold text-primary-darkest">AI Counselor</h3>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {user?.displayName || 'User'}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {user?.email}
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-gray-600 mb-2.5">
-              Your personal study abroad guide
-            </p>
-            <Link
-              to="/ai-chat"
-              className="w-full text-white font-semibold py-2 px-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg hover:shadow-xl hover:scale-[1.02] text-sm"
-              style={{
-                background: 'linear-gradient(90deg, #EF6B5C 0%, #E8506A 100%)',
-              }}
+            
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
-              <img src={aiAssistantIcon} alt="AI Assistant" className="w-4 h-4" />
-              Ask AI Assistant
-            </Link>
+              <LogOut size={18} />
+              <span>Logout</span>
+            </button>
           </>
         )}
       </div>
-      */}
     </aside>
   );
 };
