@@ -12,3 +12,5 @@ export { ApplicationRequirements } from './ApplicationRequirements';
 export { AdmissionsCounselor } from './AdmissionsCounselor';
 export { Login } from './Login';
 export { Register } from './Register';
+export { ForgotPassword } from './ForgotPassword';
+export { VerifyEmail } from './VerifyEmail';

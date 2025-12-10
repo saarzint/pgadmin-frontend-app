@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import {
   User as FirebaseUser,
   createUserWithEmailAndPassword,
@@ -8,7 +8,12 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
+  deleteUser,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  EmailAuthProvider,
 } from 'firebase/auth';
 import { auth } from './config';
 
@@ -17,6 +22,7 @@ export interface User {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  emailVerified: boolean;
 }
 
 export interface AuthContextType {
@@ -28,6 +34,10 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
+  reloadUser: () => Promise<void>;
+  deleteAccount: (password?: string) => Promise<void>;
+  isGoogleUser: () => boolean;
   clearError: () => void;
 }
 
@@ -38,6 +48,7 @@ const formatUser = (user: FirebaseUser): User => ({
   email: user.email,
   displayName: user.displayName,
   photoURL: user.photoURL,
+  emailVerified: user.emailVerified,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -57,8 +68,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setError(null);
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      if (displayName && result.user) {
-        await updateProfile(result.user, { displayName });
+      if (result.user) {
+        if (displayName) {
+          await updateProfile(result.user, { displayName });
+        }
+        // Send verification email
+        try {
+          await sendEmailVerification(result.user);
+          console.log('Verification email sent successfully to:', result.user.email);
+        } catch (emailErr) {
+          console.error('Failed to send verification email:', emailErr);
+          // Don't block signup if email fails, user can resend from verify page
+        }
         setUser(formatUser(result.user));
       }
     } catch (err) {
@@ -113,10 +134,97 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const resendVerificationEmail = async () => {
+    try {
+      setError(null);
+      if (auth.currentUser) {
+        await sendEmailVerification(auth.currentUser);
+        console.log('Verification email resent to:', auth.currentUser.email);
+      } else {
+        throw new Error('No user logged in');
+      }
+    } catch (err) {
+      console.error('Failed to resend verification email:', err);
+      const msg = getErrorMessage(err);
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
+  const reloadUser = useCallback(async () => {
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+        setUser(formatUser(auth.currentUser));
+      }
+    } catch (err) {
+      console.error('Failed to reload user:', err);
+    }
+  }, []);
+
+  const isGoogleUser = (): boolean => {
+    if (auth.currentUser) {
+      return auth.currentUser.providerData.some(
+        (provider) => provider.providerId === 'google.com'
+      );
+    }
+    return false;
+  };
+
+  const deleteAccount = async (password?: string) => {
+    try {
+      setError(null);
+      if (!auth.currentUser) {
+        throw new Error('No user logged in');
+      }
+
+      // Check if user signed in with Google
+      const isGoogle = isGoogleUser();
+
+      if (isGoogle) {
+        // Re-authenticate with Google
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(auth.currentUser, provider);
+      } else {
+        // Re-authenticate with email/password
+        if (!password) {
+          throw new Error('Password is required');
+        }
+        if (!auth.currentUser.email) {
+          throw new Error('No email associated with account');
+        }
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, password);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+      }
+      
+      // Now delete the user
+      await deleteUser(auth.currentUser);
+      setUser(null);
+    } catch (err) {
+      const msg = getErrorMessage(err);
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
   const clearError = () => setError(null);
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, signUp, signIn, signInWithGoogle, logout, resetPassword, clearError }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      error, 
+      signUp, 
+      signIn, 
+      signInWithGoogle, 
+      logout, 
+      resetPassword, 
+      resendVerificationEmail,
+      reloadUser,
+      deleteAccount,
+      isGoogleUser,
+      clearError 
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -140,6 +248,7 @@ const getErrorMessage = (error: unknown): string => {
       'auth/invalid-credential': 'Invalid email or password.',
       'auth/too-many-requests': 'Too many attempts. Try again later.',
       'auth/popup-closed-by-user': 'Sign-in was cancelled.',
+      'auth/requires-recent-login': 'Please log out and log in again before deleting your account.',
     };
     return messages[code || ''] || error.message || 'An unexpected error occurred.';
   }

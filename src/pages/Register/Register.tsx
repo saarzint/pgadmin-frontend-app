@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../services/firebase';
 import { Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
+import logo from '../../assets/icons/logo.svg';
 
 const Register = () => {
   const [displayName, setDisplayName] = useState('');
@@ -31,7 +32,7 @@ const Register = () => {
     setIsLoading(true);
     try {
       await signUp(email, password, displayName);
-      navigate('/dashboard');
+      navigate('/verify-email');
     } catch {
       // Error handled by context
     } finally {
@@ -52,38 +53,42 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-darkest via-primary-dark to-primary p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #A9C7FF 0%, #8DF8E7 50%, #A9C7FF 100%)' }}>
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: 'rgba(169, 199, 255, 0.4)' }}></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" style={{ backgroundColor: 'rgba(141, 248, 231, 0.4)' }}></div>
+      
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo & Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl mb-4">
-            <img src="/src/assets/icons/pg.svg" alt="PG Admin" className="w-10 h-10" />
+          <div className="inline-flex items-center justify-center mb-6">
+            <img src={logo} alt="PGadmit Logo" className="h-10" />
           </div>
-          <h1 className="text-3xl font-bold text-white">Create Account</h1>
-          <p className="text-primary-light mt-2">Start your journey with PG Admin</p>
+          <h1 className="text-3xl font-bold text-primary-darkest">Create Account</h1>
+          <p className="text-primary-dark/70 mt-2">Start your journey with PGadmit</p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-white/50 backdrop-blur-sm">
           {(error || validationError) && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-              {error || validationError}
-              <button onClick={() => { clearError(); setValidationError(''); }} className="float-right text-red-400 hover:text-red-600">×</button>
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm flex items-center justify-between">
+              <span>{error || validationError}</span>
+              <button onClick={() => { clearError(); setValidationError(''); }} className="text-red-400 hover:text-red-600 ml-2">×</button>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+              <label className="block text-sm font-medium text-primary-darkest mb-2">Full Name</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-gray" />
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white outline-none transition-all text-primary-darkest placeholder:text-neutral-gray"
                   required
                 />
               </div>
@@ -91,15 +96,15 @@ const Register = () => {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <label className="block text-sm font-medium text-primary-darkest mb-2">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-gray" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white outline-none transition-all text-primary-darkest placeholder:text-neutral-gray"
                   required
                 />
               </div>
@@ -107,21 +112,21 @@ const Register = () => {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-medium text-primary-darkest mb-2">Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-gray" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className="w-full pl-12 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white outline-none transition-all text-primary-darkest placeholder:text-neutral-gray"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-gray hover:text-primary-dark transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -130,15 +135,15 @@ const Register = () => {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+              <label className="block text-sm font-medium text-primary-darkest mb-2">Confirm Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-gray" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white outline-none transition-all text-primary-darkest placeholder:text-neutral-gray"
                   required
                 />
               </div>
@@ -148,7 +153,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-primary-darkest text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-6"
+              className="w-full py-3 bg-primary-dark hover:bg-primary-darkest text-white rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg hover:shadow-xl mt-6"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
             </button>
@@ -160,7 +165,7 @@ const Register = () => {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">or continue with</span>
+              <span className="px-4 bg-white text-neutral-gray">or continue with</span>
             </div>
           </div>
 
@@ -168,7 +173,7 @@ const Register = () => {
           <button
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-3 disabled:opacity-50"
+            className="w-full py-3 bg-gray-50 border border-gray-200 rounded-xl font-medium hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-3 disabled:opacity-50 text-primary-darkest"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -180,17 +185,21 @@ const Register = () => {
           </button>
 
           {/* Login Link */}
-          <p className="text-center mt-6 text-gray-600">
+          <p className="text-center mt-6 text-neutral-gray">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary font-semibold hover:text-primary-dark">
+            <Link to="/login" className="text-primary font-semibold hover:text-primary-dark transition-colors">
               Sign in
             </Link>
           </p>
         </div>
+
+        {/* Footer */}
+        <p className="text-center mt-6 text-sm text-primary-darkest/50">
+          © 2024 PGadmit. All rights reserved.
+        </p>
       </div>
     </div>
   );
 };
 
 export default Register;
-
