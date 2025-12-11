@@ -10,6 +10,7 @@ export { VisaAgent } from './VisaAgent';
 export { VisaAlerts } from './VisaAlerts';
 export { ApplicationRequirements } from './ApplicationRequirements';
 export { AdmissionsCounselor } from './AdmissionsCounselor';
+export { Billing } from './Billing';
 export { Login } from './Login';
 export { Register } from './Register';
 export { ForgotPassword } from './ForgotPassword';

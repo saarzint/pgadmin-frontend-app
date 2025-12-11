@@ -1,6 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './App.css';
-import { Dashboard, AIChat, Scholarships, Universities, Profile, AdditionalResources, EssayCenter, VisaCenter, VisaAgent, VisaAlerts, ApplicationRequirements, AdmissionsCounselor, Login, Register, ForgotPassword, VerifyEmail } from './pages';
+import { Dashboard, AIChat, Scholarships, Universities, Profile, AdditionalResources, EssayCenter, VisaCenter, VisaAgent, VisaAlerts, ApplicationRequirements, AdmissionsCounselor, Billing, Login, Register, ForgotPassword, VerifyEmail } from './pages';
 import { Sidebar, ProtectedRoute } from './components';
 import { useAuth } from './services/firebase';
 
@@ -21,6 +21,7 @@ function AppLayout() {
           <Route path="/resources" element={<AdditionalResources />} />
           <Route path="/ai-chat" element={<AIChat />} />
           <Route path="/essay-center" element={<EssayCenter />} />
+          <Route path="/billing" element={<Billing />} />
           <Route path="/visa-agent" element={<VisaAgent />} />
           <Route path="/visa-center" element={<VisaCenter />} />
           <Route path="/visa-alerts" element={<VisaAlerts />} />

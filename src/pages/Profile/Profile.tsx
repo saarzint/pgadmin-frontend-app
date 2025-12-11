@@ -8,7 +8,7 @@ import {
   AwardsHonors,
 } from '../../components/Profile';
 import { useAuth } from '../../services/firebase';
-import { Settings, Trash2, AlertTriangle, X, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Settings, Trash2, AlertTriangle, X, Lock, Eye, EyeOff, Loader2, XCircle, CreditCard, ArrowUpRight } from 'lucide-react';
 import type { AcademicRecord } from '../../components/Profile/AcademicInformation/AcademicInformation';
 import type { TestScore } from '../../components/Profile/StandardizedTests/StandardizedTests';
 import type { Activity } from '../../components/Profile/ExtracurricularActivities/ExtracurricularActivities';
@@ -24,6 +24,21 @@ const Profile: React.FC = () => {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeletePassword, setShowDeletePassword] = useState(false);
+
+  // Cancel subscription state
+  const [showCancelSubscriptionModal, setShowCancelSubscriptionModal] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  // Subscription info (stubbed until backend provides actual plan)
+  const [activePlan] = useState({
+    name: 'Pro',
+    price: '$19/mo',
+    status: 'Active',
+    renewsOn: 'Renews monthly',
+    priceId: 'prod_TaMzokkGtuI95E',
+  });
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   // Profile state
   const [profileName, setProfileName] = useState('John Doe');
@@ -123,6 +138,42 @@ const Profile: React.FC = () => {
     setShowDeletePassword(false);
   };
 
+  // Cancel subscription handlers
+  const handleCancelSubscription = async () => {
+    setIsCanceling(true);
+    setCancelError(null);
+    try {
+      // TODO: Integrate with subscription service API
+      // This is a placeholder - replace with actual subscription cancellation logic
+      // Example: await cancelSubscription(user?.uid);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Show success message and close modal
+      setShowCancelSubscriptionModal(false);
+      // You might want to show a success toast/notification here
+      alert('Your subscription has been canceled. You now have access to free features.');
+    } catch (error) {
+      setCancelError(error instanceof Error ? error.message : 'Failed to cancel subscription');
+    } finally {
+      setIsCanceling(false);
+    }
+  };
+
+  const closeCancelSubscriptionModal = () => {
+    setShowCancelSubscriptionModal(false);
+    setCancelError(null);
+  };
+
+  // Upgrade/checkout handler -> send to pricing/billing page
+  const handleUpgrade = () => {
+    setIsUpgrading(true);
+    navigate('/billing');
+    // reset immediately; navigation will replace view
+    setIsUpgrading(false);
+  };
+
   // Handlers for Academic Records
   const handleAddAcademicRecord = (record: Omit<AcademicRecord, 'id'>) => {
     const newRecord: AcademicRecord = {
@@ -204,6 +255,17 @@ const Profile: React.FC = () => {
       <div className="min-h-screen bg-white py-4">
         <div className="w-full px-6">
           <div className="space-y-6">
+            {/* Top actions */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => navigate('/billing')}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-dark text-white text-sm font-semibold hover:bg-primary-darkest transition-colors"
+              >
+                <ArrowUpRight className="w-4 h-4" />
+                Upgrade
+              </button>
+            </div>
+
             {/* Profile Header */}
             <ProfileHeader
               name={profileName}
@@ -270,6 +332,49 @@ const Profile: React.FC = () => {
                     <span className="text-xs text-gray-500">Connected with Google</span>
                   </div>
                 )}
+              </div>
+
+              {/* Subscription */}
+              <div className="border border-orange-200 rounded-xl p-4 bg-orange-50/50 mb-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-orange-800">Subscription</h3>
+                    <p className="text-sm text-orange-700 mt-1">
+                      Active plan: <span className="font-semibold">{activePlan.name}</span> ({activePlan.price})
+                    </p>
+                    <p className="text-xs text-orange-600 mt-1">{activePlan.renewsOn}</p>
+                  </div>
+                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
+                    {activePlan.status}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={handleUpgrade}
+                    disabled={isUpgrading}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-dark text-white text-sm font-semibold hover:bg-primary-darkest transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isUpgrading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Redirecting...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowUpRight className="w-4 h-4" />
+                        Upgrade / Manage
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowCancelSubscriptionModal(true)}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-orange-300 rounded-lg text-orange-700 hover:bg-orange-100 transition-colors text-sm font-semibold"
+                  >
+                    <CreditCard size={16} />
+                    Cancel Subscription
+                  </button>
+                </div>
               </div>
 
               {/* Danger Zone */}
@@ -390,6 +495,68 @@ const Profile: React.FC = () => {
                   <>
                     <Trash2 size={18} />
                     Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Subscription Confirmation Modal */}
+      {showCancelSubscriptionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+            {/* Close Button */}
+            <button
+              onClick={closeCancelSubscriptionModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Icon */}
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CreditCard className="w-8 h-8 text-orange-600" />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-xl font-bold text-gray-900 text-center mb-2">
+              Cancel Subscription?
+            </h2>
+
+            {/* Description */}
+            <p className="text-gray-600 text-center mb-6">
+              Your subscription will be canceled, and you'll be switched to a <strong>free account</strong>. You'll still have access to all free features. You can resubscribe anytime.
+            </p>
+
+            {/* Error Message */}
+            {cancelError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                {cancelError}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={closeCancelSubscriptionModal}
+                disabled={isCanceling}
+                className="flex-1 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-colors text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Keep Subscription
+              </button>
+              <button
+                onClick={handleCancelSubscription}
+                disabled={isCanceling}
+                className="flex-1 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCanceling ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <XCircle size={18} />
+                    Cancel Subscription
                   </>
                 )}
               </button>
