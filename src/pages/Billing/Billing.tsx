@@ -11,7 +11,7 @@ type Plan = {
   cadence: string;
   description: string;
   features: string[];
-  cta: string;
+  cta: string; 
 };
 
 const plans: Plan[] = [
