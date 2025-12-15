@@ -17,7 +17,6 @@ class ApiClient {
       withCredentials: API_CONFIG.withCredentials,
       headers: {
         'Content-Type': 'application/json',
-        'Connection': 'keep-alive',
       },
       maxRedirects: 5,
       validateStatus: (status) => status < 500, // Accept all status codes below 500

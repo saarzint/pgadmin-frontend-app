@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { CheckCircle2, AlertCircle, Loader2, CreditCard } from 'lucide-react';
-import { getStripe, buildReturnUrl } from '../../services/stripe';
+import { buildReturnUrl } from '../../services/stripe';
+import apiClient from '../../services/api/client';
+import { API_ENDPOINTS } from '../../services/api/config';
 
 type Plan = {
   id: string;
@@ -19,7 +20,7 @@ const plans: Plan[] = [
     id: 'starter',
     name: 'Starter',
     price: '$9',
-    priceId: 'prod_TaMz8VPAS4gbed',
+    priceId: 'price_1SdCFCGMytl1afSZfOnYJPj0'.replace(' ', ''), // starter price
     cadence: 'per month',
     description: 'Great for getting started with the essentials.',
     features: ['Up to 3 applications', 'AI chat limited', 'Email support'],
@@ -29,7 +30,7 @@ const plans: Plan[] = [
     id: 'pro',
     name: 'Pro',
     price: '$19',
-    priceId: 'prod_TaMzokkGtuI95E',
+    priceId: 'price_1SdCFdGMytl1afSZCgtVvtzF'.replace(' ', ''), // pro price
     cadence: 'per month',
     description: 'Most popular choice for active applicants.',
     features: ['Unlimited applications', 'Full AI chat', 'Priority support'],
@@ -39,7 +40,7 @@ const plans: Plan[] = [
     id: 'team',
     name: 'Team',
     price: '$49',
-    priceId: 'prod_TaMzNw0fxEsuqf',
+    priceId: 'price_1SdCFwGMytl1afSZtpoRPzhd'.replace(' ', ''), // team price
     cadence: 'per month',
     description: 'For counselors or teams managing multiple students.',
     features: ['Team workspaces', 'Shared notes', 'Dedicated success manager'],
@@ -58,22 +59,23 @@ const Billing: React.FC = () => {
       const successUrl = buildReturnUrl('/billing?status=success');
       const cancelUrl = buildReturnUrl('/billing?status=cancel');
 
-      // Expect a backend endpoint to create a session and return { url } or { sessionId }
-      const { data } = await axios.post('/api/stripe/create-checkout-session', {
-        priceId: plan.priceId,
-        successUrl,
-        cancelUrl,
-        metadata: { plan: plan.id },
+      // Create Stripe Checkout Session via backend
+      // NOTE: Currently uses a hard-coded user_profile_id=1 for demo purposes.
+      // In production, pass the real user profile id from auth/profile state.
+      const userProfileId = 1;
+
+      const data = await apiClient.post<{
+        url: string;
+        session_id: string;
+      }>(API_ENDPOINTS.BILLING.CREATE_CHECKOUT_SESSION, {
+        price_id: plan.priceId,
+        user_profile_id: userProfileId,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
       });
 
       if (data?.url) {
         window.location.href = data.url;
-        return;
-      }
-
-      if (data?.sessionId) {
-        const stripe = await getStripe();
-        await stripe?.redirectToCheckout({ sessionId: data.sessionId });
         return;
       }
 

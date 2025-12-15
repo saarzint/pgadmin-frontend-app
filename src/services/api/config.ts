@@ -39,4 +39,10 @@ export const API_ENDPOINTS = {
     UPDATE_STAGE: '/admissions/update_stage',
     LOG_AGENT_REPORT: '/admissions/log_agent_report',
   },
+  // Billing / Stripe
+  BILLING: {
+    CREATE_PAYMENT_INTENT: '/stripe/create-payment-intent',
+    CREATE_SUBSCRIPTION: '/stripe/create-subscription',
+    CREATE_CHECKOUT_SESSION: '/stripe/create-checkout-session',
+  },
 } as const;
