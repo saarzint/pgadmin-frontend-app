@@ -66,12 +66,26 @@ const Billing: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
     if (status === 'success') {
-      // Reload billing info after successful checkout
+      // Try to sync subscription from Stripe after successful checkout
+      syncSubscription();
+      // Reload billing info after sync
       setTimeout(() => {
         loadBillingInfo();
-      }, 2000);
+      }, 3000);
     }
   }, []);
+
+  const syncSubscription = async () => {
+    try {
+      // Call the sync endpoint to pull subscription from Stripe
+      await apiClient.post('/stripe/sync-subscription', {
+        user_profile_id: userProfileId,
+      });
+      console.log('Subscription synced successfully');
+    } catch (err) {
+      console.warn('Could not sync subscription (this is okay if tables are not created yet):', err);
+    }
+  };
 
   const loadBillingInfo = async () => {
     try {
@@ -196,7 +210,24 @@ const Billing: React.FC = () => {
           </div>
         ) : (
           <div className="mb-8 border border-gray-200 rounded-2xl p-6 bg-gray-50">
-            <p className="text-sm text-gray-600">No active subscription. Choose a plan below to get started.</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">No active subscription. Choose a plan below to get started.</p>
+              <button
+                onClick={syncSubscription}
+                className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                Sync Subscription
+              </button>
+            </div>
+            {error && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  {error.includes('table not found') 
+                    ? 'Database tables not created yet. Run the SQL migration in Supabase first.'
+                    : error}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
