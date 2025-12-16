@@ -1,10 +1,16 @@
 /**
  * API Configuration
  * Centralized configuration for API settings
+ * 
+ * Since frontend and backend are served from the same container,
+ * we use relative paths (empty string) so API calls work with any domain.
+ * Set VITE_API_BASE_URL only if you need to point to a different backend.
  */
 
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://pgadmit-232251258466.europe-west1.run.app',
+  // Use relative paths since frontend/backend are in same container
+  // This allows the app to work with any domain (Cloud Run URL or custom domain)
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
   timeout: 0, // No timeout - wait indefinitely for response
   withCredentials: false,
 } as const;
@@ -44,5 +50,10 @@ export const API_ENDPOINTS = {
     CREATE_PAYMENT_INTENT: '/stripe/create-payment-intent',
     CREATE_SUBSCRIPTION: '/stripe/create-subscription',
     CREATE_CHECKOUT_SESSION: '/stripe/create-checkout-session',
+    GET_SUBSCRIPTION: (userProfileId: number) => `/stripe/subscription/${userProfileId}`,
+    GET_PAYMENT_METHODS: (userProfileId: number) => `/stripe/payment-methods/${userProfileId}`,
+    GET_PAYMENT_HISTORY: (userProfileId: number) => `/stripe/payment-history/${userProfileId}`,
+    GET_BILLING_INFO: (userProfileId: number) => `/stripe/billing-info/${userProfileId}`,
+    CANCEL_SUBSCRIPTION: '/stripe/cancel-subscription',
   },
 } as const;

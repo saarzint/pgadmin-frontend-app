@@ -249,6 +249,7 @@ const getErrorMessage = (error: unknown): string => {
       'auth/too-many-requests': 'Too many attempts. Try again later.',
       'auth/popup-closed-by-user': 'Sign-in was cancelled.',
       'auth/requires-recent-login': 'Please log out and log in again before deleting your account.',
+      'auth/unauthorized-domain': `This domain is not authorized for Firebase Authentication. Please add "${typeof window !== 'undefined' ? window.location.hostname : 'your-domain'}" to your Firebase project's authorized domains in the Firebase Console.`,
     };
     return messages[code || ''] || error.message || 'An unexpected error occurred.';
   }
