@@ -103,8 +103,25 @@ const Billing: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
     if (status === 'success') {
-      // Try to sync subscription from Stripe after successful checkout
-      syncSubscription();
+      // Only sync once per payment - use localStorage to track
+      const syncKey = `subscription_synced_${userProfileId}_${Date.now()}`;
+      const lastSyncTime = localStorage.getItem(`last_sync_${userProfileId}`);
+      const now = Date.now();
+      
+      // Only sync if we haven't synced in the last 5 minutes (prevents duplicate syncs on refresh)
+      if (!lastSyncTime || (now - parseInt(lastSyncTime)) > 5 * 60 * 1000) {
+        // Try to sync subscription from Stripe after successful checkout
+        syncSubscription();
+        localStorage.setItem(`last_sync_${userProfileId}`, now.toString());
+      } else {
+        console.log('Subscription already synced recently, skipping duplicate sync');
+      }
+      
+      // Remove status parameter from URL to prevent re-syncing on refresh
+      params.delete('status');
+      const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+      window.history.replaceState({}, '', newUrl);
+      
       // Reload billing info after sync
       setTimeout(() => {
         loadBillingInfo();
