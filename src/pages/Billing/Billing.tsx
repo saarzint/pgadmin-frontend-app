@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, AlertCircle, Loader2, CreditCard, Calendar, DollarSign, FileText, X } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Loader2, CreditCard, Calendar, DollarSign, FileText, X, Coins } from 'lucide-react';
 import { buildReturnUrl } from '../../services/stripe';
 import apiClient from '../../services/api/client';
 import { API_ENDPOINTS } from '../../services/api/config';
@@ -8,45 +8,81 @@ import { billingService, type BillingInfo, type Subscription, type PaymentMethod
 type Plan = {
   id: string;
   name: string;
-  price: string;
-  priceId: string;
+  tokens: number;
+  priceInr: number;
+  priceId?: string;
   cadence: string;
   description: string;
   features: string[];
-  cta: string; 
+  cta: string;
+  disabled?: boolean;
 };
 
 const plans: Plan[] = [
   {
     id: 'starter',
-    name: 'Starter',
-    price: '$9',
-    priceId: 'price_1SdCFCGMytl1afSZfOnYJPj0'.replace(' ', ''), // starter price
-    cadence: 'per month',
-    description: 'Great for getting started with the essentials.',
-    features: ['Up to 3 applications', 'AI chat limited', 'Email support'],
-    cta: 'Choose Starter',
+    name: 'Free',
+    tokens: 25,
+    priceInr: 0,
+    // Optional Stripe price for free tier if you choose to manage it via Stripe
+    // priceId: 'price_1SdCFCGMytl1afSZfOnYJPj0'.replace(' ', ''),
+    cadence: 'Included',
+    description: 'Perfect to try out PGAdmit with the essentials.',
+    features: ['25 tokens included', 'Great for first-time users'],
+    cta: 'Included in your account',
+    disabled: true,
   },
   {
     id: 'pro',
-    name: 'Pro',
-    price: '$19',
-    priceId: 'price_1SdCFdGMytl1afSZCgtVvtzF'.replace(' ', ''), // pro price
-    cadence: 'per month',
-    description: 'Most popular choice for active applicants.',
-    features: ['Unlimited applications', 'Full AI chat', 'Priority support'],
-    cta: 'Choose Pro',
+    name: 'Tier 2',
+    tokens: 300,
+    priceInr: 999,
+    // Stripe price for Tier 2 (₹999/month)
+    priceId: 'price_1SfKELGMytl1afSZ2ZoOMePT'.replace(' ', ''),
+    cadence: 'Per month',
+    description: 'Ideal for active applicants using AI agents regularly.',
+    features: ['300 tokens every month', 'Best for power users'],
+    cta: 'Choose Tier 2',
   },
   {
     id: 'team',
-    name: 'Team',
-    price: '$49',
-    priceId: 'price_1SdCFwGMytl1afSZtpoRPzhd'.replace(' ', ''), // team price
-    cadence: 'per month',
-    description: 'For counselors or teams managing multiple students.',
-    features: ['Team workspaces', 'Shared notes', 'Dedicated success manager'],
-    cta: 'Contact Sales',
+    name: 'Tier 3',
+    tokens: 600,
+    priceInr: 1799,
+    // Stripe price for Tier 3 (₹1,799/month)
+    priceId: 'price_1SfKEuGMytl1afSZP7SnBVOn'.replace(' ', ''),
+    cadence: 'Per month',
+    description: 'High-volume plan with maximum tokens for serious applicants.',
+    features: ['600 tokens every month', 'Best value per token'],
+    cta: 'Choose Tier 3',
   },
+  {
+    id: 'topup',
+    name: 'Token Top Up',
+    tokens: 100,
+    priceInr: 299,
+    // TODO: Set a real Stripe price ID when the one-time top-up product is created
+    // priceId: '<stripe_price_id_for_topup>',
+    cadence: 'One-time pack',
+    description: 'Add extra tokens on top of your existing balance whenever you run low.',
+    features: ['100 additional tokens', 'One-time purchase'],
+    cta: 'Coming soon',
+    disabled: true,
+  },
+];
+
+type TokenUsageItem = {
+  feature: string;
+  tokensLabel: string;
+};
+
+const TOKEN_USAGE: TokenUsageItem[] = [
+  { feature: 'University Match / Search', tokensLabel: '25' },
+  { feature: 'Scholarship Match / Search', tokensLabel: '25' },
+  { feature: 'Total Visa Services', tokensLabel: '50' },
+  { feature: 'Essay Feedback', tokensLabel: '25' },
+  { feature: 'Essay Brainstorming', tokensLabel: '10' },
+  { feature: 'Voice Agent', tokensLabel: 'TBD' },
 ];
 
 const Billing: React.FC = () => {
@@ -115,7 +151,19 @@ const Billing: React.FC = () => {
     }).format(amount / 100);
   };
 
+  const formatInr = (amount: number) => {
+    if (amount === 0) {
+      return 'Free';
+    }
+    return `₹${amount.toLocaleString('en-IN')}`;
+  };
+
   const handleCheckout = async (plan: Plan) => {
+    if (!plan.priceId) {
+      setError('Checkout for this plan is not configured yet. Please choose another plan or contact support.');
+      return;
+    }
+
     setActivePlan(plan.id);
     setError(null);
     try {
@@ -152,6 +200,10 @@ const Billing: React.FC = () => {
   };
 
   const currentSubscription = billingInfo?.subscription;
+  const currentPlan = currentSubscription
+    ? plans.find((plan) => plan.id === currentSubscription.plan_id)
+    : null;
+  const currentPlanTokens = currentPlan?.tokens;
   const isCurrentPlan = (planId: string) => currentSubscription?.plan_id === planId;
 
   return (
@@ -198,6 +250,14 @@ const Billing: React.FC = () => {
                       {formatCurrency(currentSubscription.amount, currentSubscription.currency)} / {currentSubscription.interval}
                     </span>
                   </div>
+                  {currentPlanTokens && (
+                    <div className="flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-orange-500" />
+                      <span>
+                        {currentPlanTokens} tokens per billing cycle
+                      </span>
+                    </div>
+                  )}
                   {currentSubscription.cancel_at_period_end && (
                     <div className="flex items-center gap-2 text-yellow-700">
                       <AlertCircle className="w-4 h-4" />
@@ -230,6 +290,39 @@ const Billing: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* Token Overview Section */}
+        <div className="mb-8 border border-gray-200 rounded-2xl p-6 bg-white">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <Coins className="w-5 h-5 text-orange-500" />
+                <span>Token Overview</span>
+              </h2>
+              <p className="text-sm text-gray-600 mb-3">
+                Tokens power the AI agents across PGAdmit&mdash;each time you run a feature like University Search or Visa Services, a fixed number of tokens are deducted.
+              </p>
+              <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                <li>Your plan determines how many tokens you receive.</li>
+                <li>Each feature uses a predictable number of tokens per run.</li>
+                <li>You&apos;ll soon be able to purchase top-ups when you run low.</li>
+              </ul>
+            </div>
+            {currentPlanTokens && (
+              <div className="shrink-0 px-4 py-3 rounded-2xl bg-orange-50 border border-orange-100 text-right">
+                <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide mb-1">
+                  Tokens this cycle
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {currentPlanTokens}
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Based on your {currentSubscription?.plan_name} plan
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Payment Methods Section */}
         {billingInfo?.payment_methods && billingInfo.payment_methods.length > 0 && (
@@ -336,7 +429,7 @@ const Billing: React.FC = () => {
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Available Plans</h2>
           <p className="text-sm text-gray-600 mb-4">
-            Test mode enabled. Use Stripe test cards (e.g., 4242 4242 4242 4242) to simulate payments.
+            Token-based pricing in INR. Test mode is enabled&mdash;use Stripe test cards (e.g., 4242 4242 4242 4242) to simulate payments.
           </p>
 
           {error && (
@@ -352,11 +445,11 @@ const Billing: React.FC = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow ${
+                className={`flex flex-col h-full border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow ${
                   isCurrentPlan(plan.id)
                     ? 'border-orange-500 bg-orange-50'
                     : 'border-gray-200'
@@ -371,9 +464,17 @@ const Billing: React.FC = () => {
                 )}
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-lg font-semibold text-gray-900">{plan.name}</h3>
-                  <span className="text-sm text-gray-500">{plan.cadence}</span>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    {plan.cadence}
+                  </span>
                 </div>
-                <p className="text-3xl font-bold text-gray-900 mb-2">{plan.price}</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">
+                  {plan.tokens}{' '}
+                  <span className="text-base font-semibold text-gray-700">tokens</span>
+                </p>
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  {formatInr(plan.priceInr)}
+                </p>
                 <p className="text-sm text-gray-600 mb-4">{plan.description}</p>
 
                 <ul className="space-y-2 mb-6 text-sm text-gray-700">
@@ -385,27 +486,53 @@ const Billing: React.FC = () => {
                   ))}
                 </ul>
 
-                <button
-                  onClick={() => handleCheckout(plan)}
-                  disabled={activePlan === plan.id || isCurrentPlan(plan.id)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary-dark text-white hover:bg-primary-darkest transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {activePlan === plan.id ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Redirecting...
-                    </>
-                  ) : isCurrentPlan(plan.id) ? (
-                    'Current Plan'
-                  ) : (
-                    <>
-                      <CreditCard className="w-5 h-5" />
-                      {plan.cta}
-                    </>
-                  )}
-                </button>
+                <div className="mt-auto">
+                  <button
+                    onClick={() => handleCheckout(plan)}
+                    disabled={!!plan.disabled || !plan.priceId || activePlan === plan.id || isCurrentPlan(plan.id)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary-dark text-white hover:bg-primary-darkest transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {activePlan === plan.id ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Redirecting...
+                      </>
+                    ) : isCurrentPlan(plan.id) ? (
+                      'Current Plan'
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5" />
+                        {plan.cta}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Token Usage Section */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Tokens needed per feature</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Each time you run an AI feature, the following number of tokens will be deducted from your balance.
+          </p>
+          <div className="overflow-hidden border border-gray-200 rounded-2xl bg-white">
+            <div className="grid grid-cols-2 bg-gray-50 px-4 py-3 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              <span>Feature</span>
+              <span className="text-right">Tokens per run</span>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {TOKEN_USAGE.map((item) => (
+                <div key={item.feature} className="grid grid-cols-2 px-4 py-3 text-sm">
+                  <span className="text-gray-800">{item.feature}</span>
+                  <span className="text-right text-gray-900 font-medium">
+                    {item.tokensLabel}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
