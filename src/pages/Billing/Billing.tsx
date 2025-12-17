@@ -3,7 +3,7 @@ import { CheckCircle2, AlertCircle, Loader2, CreditCard, Calendar, DollarSign, F
 import { buildReturnUrl } from '../../services/stripe';
 import apiClient from '../../services/api/client';
 import { API_ENDPOINTS } from '../../services/api/config';
-import { billingService, type BillingInfo, type Subscription, type PaymentMethod, type PaymentHistory } from '../../services/api/billingService';
+import { billingService, type BillingInfo } from '../../services/api/billingService';
 
 type Plan = {
   id: string;
@@ -90,6 +90,7 @@ const Billing: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   
   // NOTE: Currently uses a hard-coded user_profile_id=1 for demo purposes.
   // In production, get this from auth/profile state or Firebase UID mapping.
@@ -128,6 +129,18 @@ const Billing: React.FC = () => {
       setLoading(true);
       const info = await billingService.getBillingInfo(userProfileId);
       setBillingInfo(info);
+
+      // Fetch current token balance for this user (best-effort; ignore failures)
+      try {
+        const balanceResponse = await apiClient.get<{ user_profile_id: number; token_balance: number }>(
+          API_ENDPOINTS.TOKENS.BALANCE(userProfileId)
+        );
+        if (typeof balanceResponse?.token_balance === 'number') {
+          setTokenBalance(balanceResponse.token_balance);
+        }
+      } catch (balanceError) {
+        console.warn('Could not load token balance:', balanceError);
+      }
     } catch (err) {
       console.error('Failed to load billing info:', err);
       // Don't show error for users without subscriptions yet
@@ -303,22 +316,44 @@ const Billing: React.FC = () => {
                 Tokens power the AI agents across PGAdmit&mdash;each time you run a feature like University Search or Visa Services, a fixed number of tokens are deducted.
               </p>
               <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-                <li>Your plan determines how many tokens you receive.</li>
+                <li>Your plan determines how many tokens you receive each cycle.</li>
                 <li>Each feature uses a predictable number of tokens per run.</li>
-                <li>You&apos;ll soon be able to purchase top-ups when you run low.</li>
+                {typeof tokenBalance === 'number' && (
+                  <li>
+                    You currently have{' '}
+                    <span className="font-semibold text-gray-900">
+                      {tokenBalance} tokens
+                    </span>{' '}
+                    available.
+                  </li>
+                )}
               </ul>
             </div>
-            {currentPlanTokens && (
-              <div className="shrink-0 px-4 py-3 rounded-2xl bg-orange-50 border border-orange-100 text-right">
-                <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide mb-1">
-                  Tokens this cycle
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {currentPlanTokens}
-                </p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Based on your {currentSubscription?.plan_name} plan
-                </p>
+            {(currentPlanTokens || typeof tokenBalance === 'number') && (
+              <div className="shrink-0 px-4 py-3 rounded-2xl bg-orange-50 border border-orange-100 text-right space-y-1">
+                {currentPlanTokens && (
+                  <div>
+                    <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide">
+                      Tokens per cycle
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {currentPlanTokens}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Based on your {currentSubscription?.plan_name ?? 'Free'} plan
+                    </p>
+                  </div>
+                )}
+                {typeof tokenBalance === 'number' && (
+                  <div className="pt-2 border-t border-orange-100">
+                    <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide">
+                      Current balance
+                    </p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {tokenBalance} tokens
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

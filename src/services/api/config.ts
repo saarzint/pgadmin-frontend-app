@@ -56,4 +56,9 @@ export const API_ENDPOINTS = {
     GET_BILLING_INFO: (userProfileId: number) => `/stripe/billing-info/${userProfileId}`,
     CANCEL_SUBSCRIPTION: '/stripe/cancel-subscription',
   },
+  // Tokens
+  TOKENS: {
+    BALANCE: (userProfileId: number) => `/tokens/balance/${userProfileId}`,
+    HISTORY: (userProfileId: number) => `/tokens/history/${userProfileId}`,
+  },
 } as const;
