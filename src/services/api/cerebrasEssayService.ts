@@ -1,13 +1,13 @@
 /**
- * Cerebras Essay Agent Service
- * AI-powered essay analysis, feedback, and idea generation using Cerebras.ai
+ * Essay Agent Service
+ * AI-powered essay analysis, feedback, and idea generation
  * 
- * To use this service, you need:
- * 1. A Cerebras API key from https://cloud.cerebras.ai
- * 2. Set VITE_CEREBRAS_API_KEY in your .env file
+ * This service now calls backend endpoints which handle token consumption
+ * and Cerebras API integration.
  */
 
 import axios from 'axios';
+import { API_CONFIG, API_ENDPOINTS } from './config';
 
 // Cerebras API Configuration
 // Docs: https://inference-docs.cerebras.ai/
@@ -41,6 +41,7 @@ export interface GeneratedIdea {
 }
 
 export interface EssayIdeaRequest {
+  user_profile_id: number;
   topic: string;
   cogins1?: string;
   cogins2?: string;
@@ -48,7 +49,9 @@ export interface EssayIdeaRequest {
   tags?: string[];
 }
 
-// Helper function to make Cerebras API calls
+// Note: Direct Cerebras API calls are now handled by the backend.
+// The helper function below is kept for getWritingSuggestions which may still use it.
+// Helper function to make Cerebras API calls (legacy - used only for getWritingSuggestions)
 async function callCerebrasAPI(messages: { role: string; content: string }[]): Promise<string> {
   const apiKey = getApiKey();
   
@@ -90,55 +93,40 @@ async function callCerebrasAPI(messages: { role: string; content: string }[]): P
 
 /**
  * Analyze an essay and provide comprehensive feedback
+ * Consumes tokens: essay_feedback (25 tokens)
  */
 export async function analyzeEssay(
+  user_profile_id: number,
   essayText: string,
   essayType: string
 ): Promise<EssayFeedbackResponse> {
-  const systemPrompt = `You are an expert college admissions essay coach with years of experience helping students craft compelling personal statements. 
-  
-Analyze the following ${essayType} essay and provide detailed feedback. Your response MUST be valid JSON in this exact format:
-{
-  "overallScore": <number 0-100>,
-  "items": [
-    {"id": "1", "type": "strength", "text": "<specific strength>"},
-    {"id": "2", "type": "strength", "text": "<another strength>"},
-    {"id": "3", "type": "improvement", "text": "<area needing improvement>"},
-    {"id": "4", "type": "improvement", "text": "<another improvement area>"},
-    {"id": "5", "type": "suggestion", "text": "<actionable suggestion>"},
-    {"id": "6", "type": "suggestion", "text": "<another suggestion>"},
-    {"id": "7", "type": "insight", "text": "<admissions insight>"},
-    {"id": "8", "type": "insight", "text": "<another insight>"}
-  ]
-}
-
-Evaluate on:
-- Opening hook and engagement
-- Authenticity and personal voice
-- Structure and flow
-- Specific examples and storytelling
-- Grammar and word choice
-- Connection to the essay prompt/type
-- Overall impact for admissions`;
-
-  const userPrompt = `Please analyze this ${essayType} essay:\n\n${essayText}`;
-
   try {
-    const response = await callCerebrasAPI([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ]);
+    const response = await axios.post(
+      `${API_CONFIG.baseURL}${API_ENDPOINTS.ESSAY.ANALYZE}`,
+      {
+        user_profile_id,
+        essay_text: essayText,
+        essay_type: essayType,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 60000, // 60 seconds
+      }
+    );
 
-    // Parse the JSON response
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]) as EssayFeedbackResponse;
-      return parsed;
-    }
-
-    // Fallback if parsing fails
-    throw new Error('Failed to parse AI response');
+    return response.data as EssayFeedbackResponse;
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 402) {
+        throw new Error('Insufficient tokens. Please purchase more tokens to analyze essays.');
+      }
+      if (error.response?.status === 400) {
+        throw new Error(error.response.data?.error || 'Invalid request. Please check your input.');
+      }
+      throw new Error(error.response?.data?.error || `Failed to analyze essay: ${error.message}`);
+    }
     console.error('Essay analysis error:', error);
     throw error;
   }
@@ -146,47 +134,41 @@ Evaluate on:
 
 /**
  * Generate essay ideas based on user input
+ * Consumes tokens: essay_brainstorm (10 tokens)
  */
 export async function generateEssayIdeas(
   request: EssayIdeaRequest
 ): Promise<GeneratedIdea[]> {
-  const systemPrompt = `You are a creative college admissions essay brainstorming coach. Generate unique, compelling essay ideas based on the student's input.
-
-Your response MUST be valid JSON in this exact format:
-{
-  "ideas": [
-    {"id": "1", "text": "<detailed essay idea with angle and approach>"},
-    {"id": "2", "text": "<another unique essay idea>"},
-    {"id": "3", "text": "<creative alternative approach>"},
-    {"id": "4", "text": "<unexpected angle on the topic>"},
-    {"id": "5", "text": "<personal growth focused idea>"}
-  ]
-}
-
-Each idea should be 2-3 sentences explaining the concept, angle, and how to make it compelling.`;
-
-  let userPrompt = `Generate essay ideas based on:\n`;
-  if (request.topic) userPrompt += `\nTopic/Theme: ${request.topic}`;
-  if (request.cogins1) userPrompt += `\nContext 1: ${request.cogins1}`;
-  if (request.cogins2) userPrompt += `\nContext 2: ${request.cogins2}`;
-  if (request.keyExperiences) userPrompt += `\nKey Experiences: ${request.keyExperiences}`;
-  if (request.tags?.length) userPrompt += `\nThemes to incorporate: ${request.tags.join(', ')}`;
-
   try {
-    const response = await callCerebrasAPI([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ]);
+    const response = await axios.post(
+      `${API_CONFIG.baseURL}${API_ENDPOINTS.ESSAY.GENERATE_IDEAS}`,
+      {
+        user_profile_id: request.user_profile_id,
+        topic: request.topic,
+        cogins1: request.cogins1,
+        cogins2: request.cogins2,
+        key_experiences: request.keyExperiences,
+        tags: request.tags,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 60000, // 60 seconds
+      }
+    );
 
-    // Parse the JSON response
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]) as { ideas: GeneratedIdea[] };
-      return parsed.ideas;
-    }
-
-    throw new Error('Failed to parse AI response');
+    return response.data.ideas as GeneratedIdea[];
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 402) {
+        throw new Error('Insufficient tokens. Please purchase more tokens to generate essay ideas.');
+      }
+      if (error.response?.status === 400) {
+        throw new Error(error.response.data?.error || 'Invalid request. Please check your input.');
+      }
+      throw new Error(error.response?.data?.error || `Failed to generate ideas: ${error.message}`);
+    }
     console.error('Idea generation error:', error);
     throw error;
   }

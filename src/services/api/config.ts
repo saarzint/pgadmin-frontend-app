@@ -61,4 +61,9 @@ export const API_ENDPOINTS = {
     BALANCE: (userProfileId: number) => `/tokens/balance/${userProfileId}`,
     HISTORY: (userProfileId: number) => `/tokens/history/${userProfileId}`,
   },
+  // Essay Services
+  ESSAY: {
+    ANALYZE: '/essay/analyze',
+    GENERATE_IDEAS: '/essay/generate-ideas',
+  },
 } as const;

@@ -4,6 +4,10 @@ import { cerebrasEssayService } from '../../services/api';
 import type { EssayFeedbackResponse, GeneratedIdea, EssayFeedbackItem } from '../../services/api/cerebrasEssayService';
 
 const EssayCenter = () => {
+  // NOTE: Currently uses a hard-coded user_profile_id=1 for demo purposes.
+  // TODO: Replace with actual user_profile_id from user profile/context
+  const userProfileId = 1;
+
   const [topic, setTopic] = useState('');
   const [cogins1, setCogins1] = useState('');
   const [cogins2, setCogins2] = useState('');
@@ -37,6 +41,7 @@ const EssayCenter = () => {
 
     try {
       const ideas = await cerebrasEssayService.generateEssayIdeas({
+        user_profile_id: userProfileId,
         topic,
         cogins1,
         cogins2,
@@ -68,7 +73,7 @@ const EssayCenter = () => {
     setFeedback(null);
 
     try {
-      const result = await cerebrasEssayService.analyzeEssay(essayText, essayType);
+      const result = await cerebrasEssayService.analyzeEssay(userProfileId, essayText, essayType);
       setFeedback(result);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to analyze essay. Please try again.';
