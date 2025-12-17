@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
@@ -19,11 +19,14 @@ import {
   ChevronDown,
   ChevronUp,
   GraduationCap,
-  LogOut
+  LogOut,
+  Coins
 } from 'lucide-react';
 import { useAuth } from '../../../services/firebase';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
+import apiClient from '../../../services/api/client';
+import { API_ENDPOINTS } from '../../../services/api/config';
 
 interface SubMenuItem {
   id: string;
@@ -50,8 +53,33 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['visa']);
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  // NOTE: For now we use a fixed user_profile_id until profile mapping is wired.
+  const userProfileId = 1;
+
+  useEffect(() => {
+    const fetchTokenBalance = async () => {
+      try {
+        const response = await apiClient.get<{ user_profile_id: number; token_balance: number }>(
+          API_ENDPOINTS.TOKENS.BALANCE(userProfileId)
+        );
+        if (typeof response?.token_balance === 'number') {
+          setTokenBalance(response.token_balance);
+        }
+      } catch (error) {
+        console.warn('Could not fetch token balance for sidebar:', error);
+      }
+    };
+
+    fetchTokenBalance();
+
+    // Refresh periodically so nav stays roughly live
+    const intervalId = setInterval(fetchTokenBalance, 60_000); // 60s
+    return () => clearInterval(intervalId);
+  }, [userProfileId]);
 
   const handleLogout = async () => {
     try {
@@ -209,6 +237,21 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
           )}
         </button>
       </div>
+
+      {/* Token Balance (when not collapsed) */}
+      {!isCollapsed && typeof tokenBalance === 'number' && (
+        <div className="px-3 mt-2">
+          <div className="flex items-center justify-between rounded-xl bg-orange-50 border border-orange-100 px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Coins className="w-4 h-4 text-orange-500" />
+              <span className="text-xs font-semibold text-gray-700">Available tokens</span>
+            </div>
+            <span className="text-sm font-bold text-gray-900">
+              {tokenBalance}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Menu */}
       <nav className="flex-1 min-h-0 p-3 overflow-y-auto">
