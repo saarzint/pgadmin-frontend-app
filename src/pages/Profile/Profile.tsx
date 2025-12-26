@@ -16,7 +16,7 @@ import type { AwardHonor } from '../../components/Profile/AwardsHonors/AwardsHon
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { user, deleteAccount, isGoogleUser } = useAuth();
+  const { user, deleteAccount, isGoogleUser, updateUserProfile } = useAuth();
 
   // Delete account state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -40,11 +40,13 @@ const Profile: React.FC = () => {
   });
   const [isUpgrading, setIsUpgrading] = useState(false);
 
-  // Profile state
-  const [profileName, setProfileName] = useState('John Doe');
+  // Profile state - initialize from Firebase user
+  const [profileName, setProfileName] = useState(user?.displayName || 'John Doe');
   const [profileQuote, setProfileQuote] = useState(
     'Aspiring to make a difference in the world through education'
   );
+  const [profileUpdateError, setProfileUpdateError] = useState<string | null>(null);
+  const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false);
 
   // Academic records state
   const [academicRecords, setAcademicRecords] = useState<AcademicRecord[]>([
@@ -244,17 +246,33 @@ const Profile: React.FC = () => {
     setAwards(awards.filter((a) => a.id !== id));
   };
 
-  // Handler for Profile Update
-  const handleUpdateProfile = (name: string, quote: string) => {
-    setProfileName(name);
-    setProfileQuote(quote);
+  // Handler for Profile Update - updates Firebase and local state
+  const handleUpdateProfile = async (name: string, quote: string) => {
+    setProfileUpdateError(null);
+    setProfileUpdateSuccess(false);
+
+    try {
+      // Update Firebase profile (displayName)
+      await updateUserProfile(name);
+
+      // Update local state
+      setProfileName(name);
+      setProfileQuote(quote);
+
+      // Show success feedback
+      setProfileUpdateSuccess(true);
+      setTimeout(() => setProfileUpdateSuccess(false), 3000);
+    } catch (error) {
+      setProfileUpdateError(error instanceof Error ? error.message : 'Failed to update profile');
+      throw error; // Re-throw so ProfileHeader knows it failed
+    }
   };
 
   return (
     <>
-      <div className="min-h-screen bg-white py-4">
-        <div className="w-full px-6">
-          <div className="space-y-6">
+      <div className="min-h-screen bg-gray-50/50 py-4">
+        <div className="w-full px-4 sm:px-6">
+          <div className="space-y-4">
             {/* Top actions */}
             <div className="flex justify-end">
               <button
@@ -265,6 +283,36 @@ const Profile: React.FC = () => {
                 Upgrade
               </button>
             </div>
+
+            {/* Success notification */}
+            {profileUpdateSuccess && (
+              <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-green-800">Profile updated!</p>
+                  <p className="text-xs text-green-600">Your changes have been saved.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Error notification */}
+            {profileUpdateError && (
+              <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-xl shadow-lg">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-red-800">Update failed</p>
+                  <p className="text-xs text-red-600">{profileUpdateError}</p>
+                </div>
+              </div>
+            )}
 
             {/* Profile Header */}
             <ProfileHeader
@@ -306,19 +354,19 @@ const Profile: React.FC = () => {
             />
 
             {/* Account Settings */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-gray-600" />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <Settings className="w-4 h-4 text-gray-600" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Account Settings</h2>
-                  <p className="text-sm text-gray-500">Manage your account preferences</p>
+                  <p className="text-xs text-gray-500">Manage your account preferences</p>
                 </div>
               </div>
 
               {/* Account Info */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Signed in as</p>
                 <p className="font-medium text-gray-900">{user?.email}</p>
                 {isGoogleUser() && (
@@ -335,7 +383,7 @@ const Profile: React.FC = () => {
               </div>
 
               {/* Subscription */}
-              <div className="border border-orange-200 rounded-xl p-4 bg-orange-50/50 mb-4">
+              <div className="border border-orange-200 rounded-lg p-3 bg-orange-50/50 mb-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold text-orange-800">Subscription</h3>
@@ -378,7 +426,7 @@ const Profile: React.FC = () => {
               </div>
 
               {/* Danger Zone */}
-              <div className="border border-red-200 rounded-xl p-4 bg-red-50/50">
+              <div className="border border-red-200 rounded-lg p-3 bg-red-50/50">
                 <h3 className="text-sm font-semibold text-red-800 mb-2">Danger Zone</h3>
                 <p className="text-sm text-red-600 mb-4">
                   Once you delete your account, there is no going back. Please be certain.

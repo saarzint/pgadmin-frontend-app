@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
-  Compass,
-  Search,
   FileText,
   DollarSign,
   Plane,
@@ -112,20 +110,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
       icon: <User size={18} />,
       path: '/profile',
       isActive: activeItem === 'profile',
-    },
-    {
-      id: 'discovery',
-      label: 'Discovery & Exploration',
-      icon: <Compass size={18} />,
-      path: '/discovery',
-      isActive: activeItem === 'discovery',
-    },
-    {
-      id: 'research',
-      label: 'Research & Shortlisting',
-      icon: <Search size={18} />,
-      path: '/research',
-      isActive: activeItem === 'research',
     },
     {
       id: 'universities',
@@ -238,18 +222,44 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
         </button>
       </div>
 
-      {/* Token Balance (when not collapsed) */}
-      {!isCollapsed && typeof tokenBalance === 'number' && (
-        <div className="px-3 mt-2">
-          <div className="flex items-center justify-between rounded-xl bg-orange-50 border border-orange-100 px-3 py-2">
-            <div className="flex items-center gap-2">
-              <Coins className="w-4 h-4 text-orange-500" />
-              <span className="text-xs font-semibold text-gray-700">Available tokens</span>
+      {/* Token Balance */}
+      {typeof tokenBalance === 'number' && (
+        <div className={`px-3 mt-2 ${isCollapsed ? 'flex justify-center' : ''}`}>
+          {isCollapsed ? (
+            <div
+              className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform shadow-md"
+              title={`${tokenBalance} tokens available`}
+            >
+              <Coins className="w-5 h-5 text-white" />
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-primary-dark text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                {tokenBalance > 99 ? '99+' : tokenBalance}
+              </span>
             </div>
-            <span className="text-sm font-bold text-gray-900">
-              {tokenBalance}
-            </span>
-          </div>
+          ) : (
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200/60 p-3">
+              {/* Decorative background */}
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-amber-200/30 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+                    <Coins className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-medium text-amber-700/80 uppercase tracking-wide">Token Balance</p>
+                    <p className="text-lg font-bold text-gray-900 leading-tight">
+                      {tokenBalance.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-medium text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
+                    Available
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -369,9 +379,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
           <>
             {/* User Info */}
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-primary-lightest flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-primary-lightest flex items-center justify-center overflow-hidden">
                 {user?.photoURL ? (
-                  <img src={user.photoURL} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                  <img
+                    src={user.photoURL}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
                 ) : (
                   <User size={20} className="text-primary-dark" />
                 )}

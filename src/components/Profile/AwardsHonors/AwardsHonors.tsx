@@ -112,9 +112,9 @@ const AwardsHonors: React.FC<AwardsHonorsProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-primary-darkest">Awards & Honors</h2>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-bold text-gray-900">Awards & Honors</h2>
         {!isAdding && (
           <button
             onClick={() => setIsAdding(true)}
@@ -128,7 +128,7 @@ const AwardsHonors: React.FC<AwardsHonorsProps> = ({
 
       {/* Add/Edit Form */}
       {isAdding && (
-        <div className="mb-6 p-4 border border-gray-200 rounded-xl bg-gray-50">
+        <div className="mb-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
