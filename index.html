@@ -5,12 +5,32 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pgadmin-frontend-app</title>
+
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow-x: hidden;
+      }
+    </style>
   </head>
+
   <body>
     <div id="root"></div>
+
+    <!-- ElevenLabs Widget (Floating – no layout break) -->
+    <elevenlabs-convai
+      agent-id="agent_3901kchs84zkf0dt6qf97k4f5f0a"
+      variant="expanded">
+    </elevenlabs-convai>
+
+    <script
+      src="https://unpkg.com/@elevenlabs/convai-widget-embed"
+      async
+      type="text/javascript">
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
-    <!-- ElevenLabs Voice/Chat Widget -->
-    <elevenlabs-convai agent-id="agent_2301kaxw371cevgrsjrzbqmak2bx"></elevenlabs-convai>
-    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
   </body>
 </html>
