@@ -4,9 +4,11 @@ import { Header, UniversitiesList } from '../../components/Universities';
 import { UniversityData } from '../../components/Universities/UniversityCard/UniversityCard';
 import { universityService } from '../../services/api';
 import { ErrorHandler } from '../../utils/errorHandler';
+import { useProfile } from '../../services/supabase/ProfileContext';
 import type { UniversityResult } from '../../services/api/types';
 
 const Universities: React.FC = () => {
+  const { profileId } = useProfile();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
   const [universities, setUniversities] = useState<UniversityData[]>([]);
@@ -116,9 +118,13 @@ const Universities: React.FC = () => {
 
   // Handle start search button click
   const handleStartSearch = () => {
+    if (!profileId) {
+      console.error('No profile ID available');
+      return;
+    }
     const query = searchQuery.trim() || 'Find universities that match my profile';
     setSearchInitiated(true);
-    fetchUniversities(1, query);
+    fetchUniversities(profileId, query);
   };
 
   const handleApply = (id: string) => {
