@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../services/firebase';
+import { useAuth } from '../../services/supabase';
 import { Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import logo from '../../assets/icons/logo.svg';
 

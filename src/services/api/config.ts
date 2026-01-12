@@ -66,4 +66,11 @@ export const API_ENDPOINTS = {
     ANALYZE: '/essay/analyze',
     GENERATE_IDEAS: '/essay/generate-ideas',
   },
+  // User Profile
+  PROFILE: {
+    GET: (profileId: number) => `/profile/${profileId}`,
+    CREATE: '/profile',
+    UPDATE: (profileId: number) => `/profile/${profileId}`,
+    DELETE: (profileId: number) => `/profile/${profileId}`,
+  },
 } as const;

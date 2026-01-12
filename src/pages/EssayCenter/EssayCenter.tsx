@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { X, CheckCircle, AlertCircle, Lightbulb, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
 import { cerebrasEssayService } from '../../services/api';
+import { useProfile } from '../../services/supabase';
 import type { EssayFeedbackResponse, GeneratedIdea, EssayFeedbackItem } from '../../services/api/cerebrasEssayService';
 
 const EssayCenter = () => {
-  // NOTE: Currently uses a hard-coded user_profile_id=1 for demo purposes.
-  // TODO: Replace with actual user_profile_id from user profile/context
-  const userProfileId = 1;
+  const { profileId } = useProfile();
 
   const [topic, setTopic] = useState('');
   const [cogins1, setCogins1] = useState('');
@@ -35,13 +34,18 @@ const EssayCenter = () => {
   };
 
   const handleGenerateIdeas = async () => {
+    if (!profileId) {
+      setIdeaError('Please complete your profile first.');
+      return;
+    }
+
     setIsGeneratingIdeas(true);
     setIdeaError(null);
     setGeneratedIdeas([]);
 
     try {
       const ideas = await cerebrasEssayService.generateEssayIdeas({
-        user_profile_id: userProfileId,
+        user_profile_id: profileId,
         topic,
         cogins1,
         cogins2,
@@ -68,12 +72,17 @@ const EssayCenter = () => {
   ];
 
   const handleAnalyzeEssay = async () => {
+    if (!profileId) {
+      setAnalysisError('Please complete your profile first.');
+      return;
+    }
+
     setIsAnalyzing(true);
     setAnalysisError(null);
     setFeedback(null);
 
     try {
-      const result = await cerebrasEssayService.analyzeEssay(userProfileId, essayText, essayType);
+      const result = await cerebrasEssayService.analyzeEssay(profileId, essayText, essayType);
       setFeedback(result);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to analyze essay. Please try again.';

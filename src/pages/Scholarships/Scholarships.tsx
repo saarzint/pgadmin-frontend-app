@@ -4,12 +4,15 @@ import { Header, MetricCards, ScholarshipsList } from '../../components/Scholars
 import { ScholarshipData } from '../../components/Scholarships/ScholarshipCard/ScholarshipCard';
 import { scholarshipService } from '../../services/api';
 import { ErrorHandler } from '../../utils/errorHandler';
+import { useProfile } from '../../services/supabase';
 import type { ScholarshipResult } from '../../services/api/types';
 
 const Scholarships: React.FC = () => {
+  const { profileId } = useProfile();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
   const [scholarships, setScholarships] = useState<ScholarshipData[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Transform API result to ScholarshipData format
   const transformScholarshipData = (result: ScholarshipResult): ScholarshipData => {
@@ -112,9 +115,14 @@ const Scholarships: React.FC = () => {
 
   // Handle start search button click
   const handleStartSearch = () => {
+    if (!profileId) {
+      setError('Please complete your profile first.');
+      return;
+    }
     setSearchInitiated(true);
+    setError(null);
     console.log('Searching scholarships with query:', searchQuery || 'Find scholarships matching my profile');
-    fetchScholarships(1);
+    fetchScholarships(profileId);
   };
 
   const handleApply = (id: string) => {
@@ -134,6 +142,13 @@ const Scholarships: React.FC = () => {
 
         {/* Metric Cards */}
         <MetricCards />
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* Start Search Section - Shows when search hasn't been initiated */}
         {!searchInitiated && !loading && (

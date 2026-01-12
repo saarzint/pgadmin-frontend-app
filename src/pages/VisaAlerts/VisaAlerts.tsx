@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Bell, ExternalLink, X } from 'lucide-react';
 import { visaAgentService } from '../../services/api';
 import { ErrorHandler } from '../../utils/errorHandler';
+import { useProfile } from '../../services/supabase';
 import type { VisaAlert } from '../../services/api/types';
 
 const VisaAlerts = () => {
+  const { profileId } = useProfile();
   // Visa alerts state
   const [alerts, setAlerts] = useState<VisaAlert[]>([]);
   const [alertsLoading, setAlertsLoading] = useState<boolean>(false);
@@ -26,9 +28,10 @@ const VisaAlerts = () => {
 
   // Mark alert as acknowledged
   const handleDismissAlert = async (alertId: number) => {
+    if (!profileId) return;
     try {
       await visaAgentService.markAlertsSent({
-        user_profile_id: 1,
+        user_profile_id: profileId,
         alert_ids: [alertId],
       });
       // Remove the alert from local state
@@ -41,9 +44,10 @@ const VisaAlerts = () => {
 
   // Mark all alerts as acknowledged
   const handleDismissAllAlerts = async () => {
+    if (!profileId) return;
     try {
       await visaAgentService.markAlertsSent({
-        user_profile_id: 1,
+        user_profile_id: profileId,
       });
       setAlerts([]);
     } catch (err) {
@@ -54,8 +58,10 @@ const VisaAlerts = () => {
 
   // Load visa alerts on component mount
   useEffect(() => {
-    fetchVisaAlerts(1);
-  }, []);
+    if (profileId) {
+      fetchVisaAlerts(profileId);
+    }
+  }, [profileId]);
 
   return (
     <div className="min-h-screen bg-white py-4">

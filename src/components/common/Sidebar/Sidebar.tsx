@@ -20,7 +20,7 @@ import {
   LogOut,
   Coins
 } from 'lucide-react';
-import { useAuth } from '../../../services/firebase';
+import { useAuth, useProfile } from '../../../services/supabase';
 import logo from '../../../assets/icons/logo.svg';
 import pgIcon from '../../../assets/icons/pg.svg';
 import apiClient from '../../../services/api/client';
@@ -53,16 +53,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['visa']);
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const { user, logout } = useAuth();
+  const { profileId } = useProfile();
   const navigate = useNavigate();
 
-  // NOTE: For now we use a fixed user_profile_id until profile mapping is wired.
-  const userProfileId = 1;
-
   useEffect(() => {
+    if (!profileId) return;
+
     const fetchTokenBalance = async () => {
       try {
         const response = await apiClient.get<{ user_profile_id: number; token_balance: number }>(
-          API_ENDPOINTS.TOKENS.BALANCE(userProfileId)
+          API_ENDPOINTS.TOKENS.BALANCE(profileId)
         );
         if (typeof response?.token_balance === 'number') {
           setTokenBalance(response.token_balance);
@@ -77,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'dashboard' }) => {
     // Refresh periodically so nav stays roughly live
     const intervalId = setInterval(fetchTokenBalance, 60_000); // 60s
     return () => clearInterval(intervalId);
-  }, [userProfileId]);
+  }, [profileId]);
 
   const handleLogout = async () => {
     try {

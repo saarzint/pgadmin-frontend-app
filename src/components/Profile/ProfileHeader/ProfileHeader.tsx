@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Edit2, Check, X, Loader2, Mail, Shield, CheckCircle } from 'lucide-react';
-import { useAuth } from '../../../services/firebase';
+import { useAuth } from '../../../services/supabase';
 
 interface ProfileHeaderProps {
   name?: string;

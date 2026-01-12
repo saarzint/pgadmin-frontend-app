@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../services/firebase';
+import { useAuth } from '../../services/supabase';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import logo from '../../assets/icons/logo.svg';
 
@@ -29,10 +29,9 @@ const Login = () => {
     setIsLoading(true);
     try {
       await signInWithGoogle();
-      navigate('/dashboard');
+      // Note: Google OAuth uses redirect, so navigation happens automatically via redirectTo
     } catch {
       // Error handled by context
-    } finally {
       setIsLoading(false);
     }
   };

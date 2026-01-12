@@ -13,11 +13,13 @@ import {
 } from 'lucide-react';
 import { applicationRequirementsService } from '../../services/api';
 import { ErrorHandler } from '../../utils/errorHandler';
+import { useProfile } from '../../services/supabase';
 import type {
   FetchApplicationRequirementsResponse
 } from '../../services/api/types';
 
 const ApplicationRequirements: React.FC = () => {
+  const { profileId } = useProfile();
   const [university, setUniversity] = useState<string>('');
   const [program, setProgram] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -31,6 +33,11 @@ const ApplicationRequirements: React.FC = () => {
       return;
     }
 
+    if (!profileId) {
+      setError('Please complete your profile first.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setLoadingMessage('Fetching application requirements...');
@@ -39,7 +46,7 @@ const ApplicationRequirements: React.FC = () => {
       // Fetch the requirements
       const response: FetchApplicationRequirementsResponse =
         await applicationRequirementsService.fetchRequirements({
-          user_profile_id: 1,
+          user_profile_id: profileId,
           university: university.trim(),
           program: program.trim(),
         });

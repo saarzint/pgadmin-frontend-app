@@ -2,7 +2,7 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './App.css';
 import { Dashboard, AIChat, Scholarships, Universities, Profile, AdditionalResources, EssayCenter, VisaCenter, VisaAgent, VisaAlerts, ApplicationRequirements, AdmissionsCounselor, Billing, Login, Register, ForgotPassword, VerifyEmail } from './pages';
 import { Sidebar, ProtectedRoute } from './components';
-import { useAuth } from './services/firebase';
+import { useAuth } from './services/supabase';
 
 function AppLayout() {
   const location = useLocation();

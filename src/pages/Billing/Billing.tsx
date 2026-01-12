@@ -4,6 +4,7 @@ import { buildReturnUrl } from '../../services/stripe';
 import apiClient from '../../services/api/client';
 import { API_ENDPOINTS } from '../../services/api/config';
 import { billingService, type BillingInfo } from '../../services/api/billingService';
+import { useProfile } from '../../services/supabase';
 
 type Plan = {
   id: string;
@@ -86,28 +87,27 @@ const TOKEN_USAGE: TokenUsageItem[] = [
 ];
 
 const Billing: React.FC = () => {
+  const { profileId } = useProfile();
   const [activePlan, setActivePlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
-  
-  // NOTE: Currently uses a hard-coded user_profile_id=1 for demo purposes.
-  // In production, get this from auth/profile state or Firebase UID mapping.
-  const userProfileId = 1;
+
+  // Get userProfileId from profile context
+  const userProfileId = profileId;
 
   useEffect(() => {
     loadBillingInfo();
-    
+
     // Check for success/cancel status in URL
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
-    if (status === 'success') {
+    if (status === 'success' && userProfileId) {
       // Only sync once per payment - use localStorage to track
-      const syncKey = `subscription_synced_${userProfileId}_${Date.now()}`;
       const lastSyncTime = localStorage.getItem(`last_sync_${userProfileId}`);
       const now = Date.now();
-      
+
       // Only sync if we haven't synced in the last 5 minutes (prevents duplicate syncs on refresh)
       if (!lastSyncTime || (now - parseInt(lastSyncTime)) > 5 * 60 * 1000) {
         // Try to sync subscription from Stripe after successful checkout
@@ -116,20 +116,22 @@ const Billing: React.FC = () => {
       } else {
         console.log('Subscription already synced recently, skipping duplicate sync');
       }
-      
+
       // Remove status parameter from URL to prevent re-syncing on refresh
       params.delete('status');
       const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
       window.history.replaceState({}, '', newUrl);
-      
+
       // Reload billing info after sync
       setTimeout(() => {
         loadBillingInfo();
       }, 3000);
     }
-  }, []);
+  }, [userProfileId]);
 
   const syncSubscription = async () => {
+    if (!userProfileId) return;
+
     try {
       // Call the sync endpoint to pull subscription from Stripe
       await apiClient.post('/stripe/sync-subscription', {
@@ -142,6 +144,11 @@ const Billing: React.FC = () => {
   };
 
   const loadBillingInfo = async () => {
+    if (!userProfileId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const info = await billingService.getBillingInfo(userProfileId);
@@ -191,6 +198,11 @@ const Billing: React.FC = () => {
   const handleCheckout = async (plan: Plan) => {
     if (!plan.priceId) {
       setError('Checkout for this plan is not configured yet. Please choose another plan or contact support.');
+      return;
+    }
+
+    if (!userProfileId) {
+      setError('Please complete your profile first before subscribing.');
       return;
     }
 

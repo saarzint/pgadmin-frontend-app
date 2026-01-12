@@ -15,6 +15,7 @@ import {
 } from '../../components/AdmissionsCounselor';
 import { admissionsCounselorService } from '../../services/api';
 import { ErrorHandler } from '../../utils/errorHandler';
+import { useProfile } from '../../services/supabase';
 import type {
   AdmissionsSummaryResponse,
   AdmissionsNextStep,
@@ -24,6 +25,7 @@ import type {
 } from '../../services/api/types';
 
 const AdmissionsCounselor: React.FC = () => {
+  const { profileId } = useProfile();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -110,17 +112,21 @@ const AdmissionsCounselor: React.FC = () => {
 
   // Handle start search
   const handleStartSearch = () => {
+    if (!profileId) {
+      setError('Please complete your profile first.');
+      return;
+    }
     console.log('Loading dashboard with query:', searchQuery || 'Default profile');
     setSearchInitiated(true);
-    fetchSummary(1);
+    fetchSummary(profileId);
   };
 
   // Handle refresh
   const handleRefresh = () => {
-    fetchSummary(1);
+    if (profileId) {
+      fetchSummary(profileId);
+    }
   };
-
-  const USER_ID = 1; // Default user ID for modals
 
   if (error) {
     return (
@@ -219,7 +225,7 @@ const AdmissionsCounselor: React.FC = () => {
                   onEditStage={() => setShowUpdateStageModal(true)}
                 />
                 <ActiveAgentsCard activeAgents={activeAgents} />
-                <AgentActivityCard userId={USER_ID} />
+                {profileId && <AgentActivityCard userId={profileId} />}
               </div>
 
               {/* Middle Column - Next Steps and Deadlines */}
@@ -245,20 +251,24 @@ const AdmissionsCounselor: React.FC = () => {
         )}
 
         {/* Modals */}
-        <NextStepsModal
-          isOpen={showNextStepsModal}
-          onClose={() => setShowNextStepsModal(false)}
-          userId={USER_ID}
-        />
+        {profileId && (
+          <>
+            <NextStepsModal
+              isOpen={showNextStepsModal}
+              onClose={() => setShowNextStepsModal(false)}
+              userId={profileId}
+            />
 
-        <UpdateStageModal
-          isOpen={showUpdateStageModal}
-          onClose={() => setShowUpdateStageModal(false)}
-          userId={USER_ID}
-          currentStage={currentStage}
-          currentScore={progressScore}
-          onUpdate={handleRefresh}
-        />
+            <UpdateStageModal
+              isOpen={showUpdateStageModal}
+              onClose={() => setShowUpdateStageModal(false)}
+              userId={profileId}
+              currentStage={currentStage}
+              currentScore={progressScore}
+              onUpdate={handleRefresh}
+            />
+          </>
+        )}
       </div>
     </div>
   );

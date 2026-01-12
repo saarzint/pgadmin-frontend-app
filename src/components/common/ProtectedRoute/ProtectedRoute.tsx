@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../../services/firebase';
+import { useAuth } from '../../../services/supabase';
 import { Loader2 } from 'lucide-react';
 import logo from '../../../assets/icons/logo.svg';
 

@@ -1,11 +1,13 @@
 /**
  * API Client
  * Configured axios instance with interceptors
+ * Uses Supabase JWT token for authentication
  */
 
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_CONFIG } from './config';
 import { ApiError } from './types';
+import { supabase } from '../supabase/config';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -28,26 +30,17 @@ class ApiClient {
   private setupInterceptors(): void {
     // Request interceptor
     this.client.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        // Add authorization token if available
-        const token = localStorage.getItem('auth_token');
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
+      async (config: InternalAxiosRequestConfig) => {
+        // Get fresh token from Supabase session
+        const { data: { session } } = await supabase.auth.getSession();
 
-        // Log request in development
-        if (import.meta.env.DEV) {
-          console.log('API Request:', {
-            method: config.method?.toUpperCase(),
-            url: config.url,
-            data: config.data,
-          });
+        if (session?.access_token && config.headers) {
+          config.headers.Authorization = `Bearer ${session.access_token}`;
         }
 
         return config;
       },
       (error: AxiosError) => {
-        console.error('Request error:', error);
         return Promise.reject(error);
       }
     );
@@ -55,14 +48,6 @@ class ApiClient {
     // Response interceptor
     this.client.interceptors.response.use(
       (response: AxiosResponse) => {
-        // Log response in development
-        if (import.meta.env.DEV) {
-          console.log('API Response:', {
-            status: response.status,
-            data: response.data,
-          });
-        }
-
         return response;
       },
       (error: AxiosError) => {
@@ -109,7 +94,6 @@ class ApiClient {
           apiError.message = error.message;
         }
 
-        console.error('API Error:', apiError);
         return Promise.reject(apiError);
       }
     );
